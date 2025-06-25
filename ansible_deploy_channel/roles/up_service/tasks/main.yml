@@ -1,15 +1,34 @@
 ---
 # tasks file for up_service
+- name: Ensure remote_app_dir exists
+  become: yes
+  file:
+    path: "{{ remote_app_dir }}"
+    state: directory
+    mode: '0755'
+    owner: docker
+    group: docker
+
+- name: Ensure remote_config_dir exists
+  become: yes
+  file:
+    path: "{{ remote_config_dir }}"
+    state: directory
+    mode: '0755'
+    owner: docker
+    group: docker
+
 - name: Copy up-all.sh to remote
   become: yes
-  copy:
+  template:
     src: up-all.sh.j2
     dest: "{{ remote_app_dir }}/"
     mode: '0755'
 
 - name: Run up-all.sh to deploy
   become: yes
+  become_user: docker
   shell: "{{ remote_app_dir }}/up-all.sh"
   args:
     chdir: "{{ remote_app_dir }}"
-    warn: false
+

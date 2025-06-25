@@ -1,0 +1,341 @@
+version: "3"
+services:
+  ### Common service
+  
+  common-api:
+    container_name: common-api
+    image: ${REGISTRY_HOST}/${IMAGE_COMMON}
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "10"
+    restart: always
+    network_mode: host
+    env_file:
+      - ../data/config/common.env
+      - ../data/config/common-api.env
+    volumes:
+      - ../logs/common-api:/app/logs
+  
+  navi-bridge:
+    container_name: navi-bridge
+    image: ${REGISTRY_HOST}/${IMAGE_NAVI_BRIDGE}
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "10"
+    restart: always
+    network_mode: host
+    env_file:
+      - ../data/config/common.env
+      - ../data/config/navi-bridge.env
+    volumes:
+      - ../logs/navi-bridge:/logs
+
+  core-gateway:
+    container_name: core-gateway
+    image: ${REGISTRY_HOST}/${IMAGE_CORE_GATEWAY}
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "10"
+    restart: always
+    network_mode: host
+    env_file:
+      - ../data/config/common.env
+      - ../data/config/core-gateway.env
+    volumes:
+      - ../logs/core-gateway:/app/logs
+  
+  alarm-api:
+    container_name: alarm-api
+    image: ${REGISTRY_HOST}/${IMAGE_ALARM}
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "10"
+    restart: always
+    network_mode: host
+    env_file:
+      - ../data/config/common.env
+      - ../data/config/alarm.env
+    volumes:
+      - ../logs/alarm-api:/app/logs
+
+  third-party:
+    container_name: third-party
+    image: ${REGISTRY_HOST}/${IMAGE_THIRD_PARTY}
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "10"
+    restart: always
+    network_mode: host
+    env_file:
+      - ../data/config/common.env
+      - ../data/config/third-party.env
+    volumes:
+      - ../logs/third-party:/logs
+
+  banner-api:
+    container_name: banner-api
+    image: ${REGISTRY_HOST}/${IMAGE_BANNER}
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "10"
+    restart: always
+    network_mode: host
+    env_file:
+      - ../data/config/common.env
+      - ../data/config/banner.env
+    volumes:
+      - ../logs/banner-api:/app/logs
+
+  community-api:
+    container_name: community-api
+    image: ${REGISTRY_HOST}/${IMAGE_COMMUNITY}
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "10"
+    restart: always
+    network_mode: host
+    env_file:
+      - ../data/config/common.env
+      - ../data/config/community.env
+
+    volumes:
+      - ../logs/community-api:/app/logs
+
+  discover-api:
+    container_name: discover-api
+    image: ${REGISTRY_HOST}/${IMAGE_DISCOVER}
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "10"
+    restart: always
+    network_mode: host
+    env_file:
+      - ../data/config/common.env
+      - ../data/config/discover.env
+    volumes:
+      - ../logs/discover-api:/app/logs
+
+  event-api:
+    container_name: event-api
+    image: ${REGISTRY_HOST}/${IMAGE_EVENT}
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "10"
+    restart: always
+    network_mode: host
+    env_file:
+      - ../data/config/common.env
+      - ../data/config/event.env
+    volumes:
+      - ../data/pinpoint/pinpoint-agent:/app/pinpoint-agent
+      - ../logs/event-api:/app/logs
+
+  market-data-api:
+    container_name: market-data-api
+    image: ${REGISTRY_HOST}/${IMAGE_MARKET_DATA}
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "10"
+    restart: always
+    network_mode: host
+    env_file:
+      - ../data/config/common.env
+      - ../data/config/market-data.env
+    volumes:
+     # - ../data/config/market-data.application.yml:/app/application.yml
+      - ../logs/market-data-api:/app/logs
+
+  market-query:
+    container_name: market-query
+    image: ${REGISTRY_HOST}/${IMAGE_MARKET_QUERY}
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "10"
+    restart: always
+    network_mode: host
+    env_file:
+      - ../data/config/common.env
+      - ../data/config/market-query.env
+    volumes:
+      - ../logs/market-query:/logs
+  
+  notification:
+    container_name: notification
+    image: ${REGISTRY_HOST}/${IMAGE_NOTIFICATION}
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "10"
+    restart: always
+    network_mode: host
+    env_file:
+      - ../data/config/common.env
+      - ../data/config/notification.env
+    volumes:
+      - ../logs/notification:/logs
+
+  stock-detail-api:
+    container_name: stock-detail-api
+    image: ${REGISTRY_HOST}/${IMAGE_STOCK_DETAIL}
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "10"
+    restart: always
+    network_mode: host
+    env_file:
+      - ../data/config/common.env
+      - ../data/config/stock-detail.env
+    volumes:
+      - ../logs/stock-detail-api:/app/logs
+
+#  stocking-api:
+#    container_name: stocking-api
+#    image: ${REGISTRY_HOST}/${IMAGE_STOCKING}
+#    logging:
+#      options:
+#        max-size: "10m"
+#        max-file: "3"
+#    restart: always
+#    network_mode: host
+#    volumes:
+#      - ../data/config/stocking.application.yml:/app/application.yml
+#      - ../logs/stocking-api:/app/logs
+  ai-content-filtering:
+    container_name: ai-content-filtering
+    image: ${REGISTRY_HOST}/${IMAGE_AI_FILTERING}
+    restart: always
+    network_mode: host
+    volumes:
+      - ../data/ai-data/profanity_wordlist.txt:/home/working/app/storage/externals/profanity_wordlist.txt 
+  align-idcard:
+    container_name: align-idcard
+    image: ${REGISTRY_HOST}/${IMAGE_ALIGN_IDCARD}
+    restart: always
+    network_mode: host
+
+  ### Top service
+
+  aaa:
+    container_name: aaa
+    image: ${REGISTRY_HOST}/${IMAGE_AAA}
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "10"
+    restart: always
+    network_mode: host
+    env_file:
+      - ../data/config/common.env
+      - ../data/config/aaa.env
+    volumes:
+      - ../logs/aaa:/logs
+
+  user-utilities:
+    container_name: user-utilities
+    image: ${REGISTRY_HOST}/${IMAGE_USER_UTILITY}
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "10"
+    restart: always
+    network_mode: host
+    depends_on:
+      - aaa
+    env_file:
+      - ../data/config/common.env
+      - ../data/config/user-utilities.env
+    volumes:
+      - ../logs/user-utilities:/logs
+  
+  rest:
+    container_name: rest
+    image: ${REGISTRY_HOST}/${IMAGE_REST}
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "10"
+    restart: always
+    network_mode: host
+    depends_on:
+      - aaa
+    env_file:
+      - ../data/config/common.env
+      - ../data/config/rest.env
+    volumes:
+      - ../logs/rest:/logs
+
+  rest2:
+    container_name: rest2
+    image: ${REGISTRY_HOST}/${IMAGE_REST}
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "10"
+    restart: always
+    network_mode: host
+    depends_on:
+      - aaa
+    env_file:
+      - ../data/config/common.env
+      - ../data/config/rest2.env
+    volumes:
+      - ../logs/rest2:/logs
+
+  rest3:
+    container_name: rest3
+    image: ${REGISTRY_HOST}/${IMAGE_REST}
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "10"
+    restart: always
+    network_mode: host
+    depends_on:
+      - aaa
+    env_file:
+      - ../data/config/common.env
+      - ../data/config/rest3.env
+    volumes:
+      - ../logs/rest3:/logs
+
+  wts:
+    container_name: wts
+    image: ${REGISTRY_HOST}/${IMAGE_WTS}
+    restart: always
+    network_mode: host
+    depends_on:
+      - rest
+    volumes:
+      - ../logs/wts:/var/log/nginx
+      - ../data/wts/certificate:/etc/nginx/certs
+      - ../data/wts/ssl:/etc/nginx/ssl
+      #- ../data/wts/dist-prod:/usr/share/nginx/html
+      - ./wts/default.conf.prod:/etc/nginx/conf.d/default.conf
+      - ./wts/common.conf.prod:/etc/nginx/includes/common.conf
+      - ../data/basic-auth/.htpasswd:/etc/nginx/.htpasswd
+
+  ### Channel Office
+  
+  channel-office:
+    container_name: channel-office
+    image: ${REGISTRY_HOST}/${IMAGE_CHANNEL_OFFICE}
+    restart: always
+    network_mode: host
+    volumes:
+      - ../data/config/channel-office-api.env:/var/www/html/api/.env
+      - ../data/config/channel-office-admin.env:/var/www/html/admin/.env
+      - ../logs/channel-office:/var/www/html/api/storage/logs
+      - ../logs/channel-office/nginx-logs:/var/log/nginx
+

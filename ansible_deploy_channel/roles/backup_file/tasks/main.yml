@@ -1,15 +1,33 @@
 ---
 # tasks file for backup
+- name: Ensure remote_app_dir exists
+  become: yes
+  file:
+    path: "{{ remote_app_dir }}"
+    state: directory
+    mode: '0755'
+    owner: docker
+    group: docker
+
+- name: Ensure remote_config_dir exists
+  become: yes
+  file:
+    path: "{{ remote_config_dir }}"
+    state: directory
+    mode: '0755'
+    owner: docker
+    group: docker
+
 - name: Copy backup_before_deploy.sh to remote
   become: yes
-  copy:
+  template:
     src: backup_before_deploy.sh.j2
-    dest: "{{ remote_app_dir }}/"
+    dest: "{{ remote_app_dir }}/backup_before_deploy.sh"
     mode: '0755'
 
 - name: Run backup_before_deploy.sh on remote
   become: yes
+  become_user: docker
   shell: "{{ remote_app_dir }}/backup_before_deploy.sh"
   args:
     chdir: "{{ remote_app_dir }}"
-    warn: false

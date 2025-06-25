@@ -8,7 +8,8 @@ TIMESTAMP=$(date +"%d%m%Y_%H%M%S")
 mkdir -p "$APP_DIR_BK/$TIMESTAMP"
 mkdir -p "$CONFIG_DIR_BK/$TIMESTAMP"
 
-cp $APP_DIR/* $APP_DIR_BK/$TIMESTAMP/ 2>/dev/null || true
+cp $APP_DIR/.env $APP_DIR_BK/$TIMESTAMP/env 2>/dev/null || true
+cp $APP_DIR/docker-compose* $APP_DIR_BK/$TIMESTAMP/ 2>/dev/null || true
 cp $CONFIG_DIR/* $CONFIG_DIR_BK/$TIMESTAMP/ 2>/dev/null || true
 
 

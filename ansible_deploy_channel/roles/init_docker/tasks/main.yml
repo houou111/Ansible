@@ -1,0 +1,33 @@
+---
+# Tạo user docker và cài đặt docker engine
+- name: Ensure group docker exists
+  become: yes
+  group:
+    name: docker
+    state: present
+
+- name: Ensure user docker exists
+  become: yes
+  user:
+    name: docker
+    comment: Docker User
+    uid: 8001
+    group: docker
+    home: /home/docker
+    shell: /bin/bash
+    create_home: yes
+    state: present
+
+- name: Add user docker to docker group
+  become: yes
+  user:
+    name: docker
+    groups: docker
+    append: yes
+
+- name: Install Docker using official script (for CentOS 9)
+  become: yes
+  shell: |
+    curl -fsSL https://get.docker.com | sh
+  args:
+    creates: /usr/bin/docker

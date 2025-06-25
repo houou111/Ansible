@@ -1,6 +1,7 @@
 ---
-- name: deploy_file
+- name: init_docker
   hosts: channel_app
   become: yes
   roles:
-    - deploy_file
+    - init_docker
+
