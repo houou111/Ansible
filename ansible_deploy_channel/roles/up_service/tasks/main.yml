@@ -24,6 +24,8 @@
     src: up-all.sh.j2
     dest: "{{ remote_app_dir }}/up-all.sh"
     mode: '0755'
+    owner: docker
+    group: docker
 
 - name: Run up-all.sh to deploy
   become: yes
