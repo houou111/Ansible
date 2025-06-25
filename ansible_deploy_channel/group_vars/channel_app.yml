@@ -1,0 +1,4 @@
+# Biến dùng chung cho group channel_app
+remote_app_dir: /var/www/jbsv-prod/application
+remote_config_dir: /var/www/jbsv-prod/data/config
+

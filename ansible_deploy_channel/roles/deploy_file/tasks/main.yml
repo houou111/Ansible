@@ -1,0 +1,51 @@
+---
+# tasks file for deploy_file
+- name: Deploy env file and rename to .env to remote application dir
+  become: yes
+  copy:
+    src: env.j2
+    dest: "{{ remote_app_dir }}/.env"
+    mode: '0644'
+
+- name: Deploy docker-compose to remote application dir
+  become: yes
+  copy:
+    src: "{{ item }}.j2"
+    dest: "{{ remote_app_dir }}/{{ item }}"
+    mode: '0644'
+  with_items:
+    - docker-compose-market-collector.yml
+    - docker-compose-market-data.yml
+
+- name: Deploy all config templates to remote config dir
+  become: yes
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ remote_config_dir }}/{{ item }}"
+    mode: '0644'
+  with_items:
+    - aaa.env
+    - alarm.env
+    - banner.env
+    - channel-office-admin.env
+    - channel-office-api.env
+    - common-api.env
+    - common.env
+    - community.env
+    - core-gateway.env
+    - discover.env
+    - event.env
+    - market-collector.env
+    - market-data.env
+    - market-query.env
+    - market-realtime.env
+    - navi-bridge.env
+    - navi-listener.env
+    - notification.env
+    - rest.env
+    - rest2.env
+    - rest3.env
+    - stock-detail.env
+    - third-party.env
+    - user-utilities.env
+    - ws.env

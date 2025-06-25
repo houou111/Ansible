@@ -1,0 +1,15 @@
+---
+# tasks file for up_service
+- name: Copy up-all.sh to remote
+  become: yes
+  copy:
+    src: up-all.sh.j2
+    dest: "{{ remote_app_dir }}/"
+    mode: '0755'
+
+- name: Run up-all.sh to deploy
+  become: yes
+  shell: "{{ remote_app_dir }}/up-all.sh"
+  args:
+    chdir: "{{ remote_app_dir }}"
+    warn: false

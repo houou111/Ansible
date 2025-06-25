@@ -1,0 +1,12 @@
+#!/bin/bash
+
+FLUENTD_DIR=/var/www/fluentd
+APP_DIR=/var/www/jbsv-prod/application
+
+cd $FLUENTD_DIR
+docker compose -f docker-compose.yml up -d
+
+cd $APP_DIR
+source .env
+docker compose -f docker-compose-market-realtime.yml up -d
+docker compose -f docker-compose-trading.yml up -d

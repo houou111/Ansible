@@ -1,0 +1,7 @@
+---
+- name: backup_file
+  hosts: channel_app
+  become: yes
+  roles:
+    - backup_file
+
