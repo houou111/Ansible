@@ -1,9 +1,7 @@
 ---
-- name: deploy channel
-  hosts: channel_servers
+- name: up_service
+  hosts: channel_app
   become: yes
   roles:
-    - backup
-    - deploy_file
     - up_service
 

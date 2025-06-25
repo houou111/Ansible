@@ -21,21 +21,23 @@
 - name: Deploy env file and rename to .env to remote application dir
   become: yes
   become_user: docker
-  copy:
-    src: env.j2
+  template:
+    src: "{{ item }}.j2"
     dest: "{{ remote_app_dir }}/.env"
     mode: '0644'
+  with_items:
+    - env
 
 - name: Deploy docker-compose to remote application dir
   become: yes
   become_user: docker
-  copy:
+  template:
     src: "{{ item }}.j2"
     dest: "{{ remote_app_dir }}/{{ item }}"
     mode: '0644'
   with_items:
-    - docker-compose-market-collector.yml
-    - docker-compose-market-data.yml
+    - docker-compose-market-realtime.yml
+    - docker-compose-trading.yml
 
 - name: Deploy all config templates to remote config dir
   become: yes
@@ -70,3 +72,4 @@
     - third-party.env
     - user-utilities.env
     - ws.env
+    - render-chart-image.env

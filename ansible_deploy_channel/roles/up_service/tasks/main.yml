@@ -22,7 +22,7 @@
   become: yes
   template:
     src: up-all.sh.j2
-    dest: "{{ remote_app_dir }}/"
+    dest: "{{ remote_app_dir }}/up-all.sh"
     mode: '0755'
 
 - name: Run up-all.sh to deploy
