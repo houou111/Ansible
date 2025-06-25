@@ -1,0 +1,30 @@
+---
+- name: Deploy Trading Services
+  hosts: prod_channel
+  become: yes
+  tasks:
+
+    - name: Sao chép file .env từ localhost lên remote
+      copy:
+        src: /home/ansible/deploy_channel/.env  # Đường dẫn file .env trên localhost
+        dest: /var/www/jbsv-prod/application/.env
+        owner: jbsv
+        group: jbsv
+        mode: "0644"
+
+    - name: Sao chép file deploy_channel.sh từ localhost lên remote
+      copy:
+        src: /home/ansible/deploy_channel/deploy_channel.sh
+        dest: /var/www/jbsv-prod/application/deploy_channel.sh
+        owner: jbsv
+        group: jbsv
+        mode: '0755'
+
+    - name: Execute deploy_channel.sh
+      ansible.builtin.command: /var/www/jbsv-prod/application/deploy_channel.sh
+      register: script_output
+      changed_when: script_output.rc != 0
+
+    - name: Show script output
+      ansible.builtin.debug:
+        var: script_output.stdout

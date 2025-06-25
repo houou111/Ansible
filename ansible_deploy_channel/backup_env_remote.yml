@@ -1,0 +1,24 @@
+---
+- name: Copy and execute backup_env.sh
+  hosts: prod_channel
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Copy backup_env.sh to remote host
+      ansible.builtin.copy:
+        src: backup_env_remote.sh
+        dest: /var/www/jbsv-prod/application/backup_env.sh
+        owner: jbsv
+        group: jbsv
+        mode: '0755'
+
+    - name: Execute backup_env.sh
+      ansible.builtin.command: /var/www/jbsv-prod/application/backup_env.sh
+      register: script_output
+      changed_when: script_output.rc != 0
+
+    - name: Show script output
+      ansible.builtin.debug:
+        var: script_output.stdout
+
