@@ -1,0 +1,7 @@
+---
+- name: up_service
+  hosts: channel_app
+  become: yes
+  roles:
+    - up_service
+

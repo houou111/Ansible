@@ -1,0 +1,19 @@
+#!/bin/bash
+# Rollback script sinh tự động bởi Ansible
+APP_DIR=/var/www/jbsv-prod/application
+APP_DIR_BK=/var/www/jbsv-prod/application/bk
+CONFIG_DIR=/var/www/jbsv-prod/data/config
+CONFIG_DIR_BK=/var/www/jbsv-prod/data/config/bk
+
+# Lấy thư mục backup mới nhất
+LATEST_APP_BK=$(ls -1dt $APP_DIR_BK/* | head -n1)
+LATEST_CONFIG_BK=$(ls -1dt $CONFIG_DIR_BK/* | head -n1)
+
+# Rollback file .env
+cp $LATEST_APP_BK/env $APP_DIR/.env 2>/dev/null || true
+# Rollback các file docker-compose
+cp $LATEST_APP_BK/docker-compose* $APP_DIR/ 2>/dev/null || true
+# Rollback toàn bộ file config
+cp $LATEST_CONFIG_BK/* $CONFIG_DIR/ 2>/dev/null || true
+
+echo "Rollback completed!"

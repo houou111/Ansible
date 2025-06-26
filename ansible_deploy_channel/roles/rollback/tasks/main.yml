@@ -1,0 +1,19 @@
+---
+# tasks file for rollback
+
+- name: Copy rollback script template lên remote
+  template:
+    src: rollback_from_lastest_bk.sh.j2
+    dest: "{{ remote_app_dir }}/rollback_from_lastest_bk.sh"
+    mode: '0755'
+    owner: docker
+    group: docker
+
+- name: Thực thi rollback script trên remote
+  become: yes
+  become_user: docker
+  shell: "{{ remote_app_dir }}/rollback_from_lastest_bk.sh"
+  args:
+    chdir: "{{ remote_app_dir }}"
+
+
