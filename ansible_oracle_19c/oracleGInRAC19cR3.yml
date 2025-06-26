@@ -1,0 +1,8 @@
+- hosts: ora-x1,ora-x2
+  user: root
+ 
+  roles:
+   - racgi19c_install         #To Install Oracle Grid Infrastructure Installation
+   #- racdbsoft19c_install    # To Install Oracle RAC software installation
+   #- racdb12c_create         # To Create 12c - Two node RACDB
+   #- racdb19c_create         # To create Two Node RACDB ~19C
