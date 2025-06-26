@@ -3,7 +3,7 @@
   hosts: channel_servers
   become: yes
   roles:
-    - backup
+    - backup_file
     - deploy_file
     - up_service
 
