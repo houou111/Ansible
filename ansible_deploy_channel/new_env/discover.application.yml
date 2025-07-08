@@ -1,0 +1,187 @@
+
+NODE_ID: 1
+
+ENV: dev
+
+server:
+  port: 8087
+#  forward-headers-strategy: framework
+spring:
+  #  config:
+  #    import: 'optional:consul:'
+  application:
+    name: discover-service
+  datasource-primary:
+    driverClassName: "org.mariadb.jdbc.Driver"
+    url: jdbc:mariadb://dmz-trading-db01:3306/discover
+    username: discover
+    password: 'bOdC@LoEqkQLx!8K'
+  datasource-secondary:
+    driverClassName: "org.mariadb.jdbc.Driver"
+    url: jdbc:mariadb://dmz-trading-db02:3306/finn_data?serverTimezone=Asia/Ho_Chi_Minh
+    username: admin
+    password: '8k0d3tUGeVIf/0J/'
+  datasource-tertiary:
+    driverClassName: "org.mariadb.jdbc.Driver"
+    url: jdbc:mariadb://dmz-trading-db01:3306/notification
+    username: notification
+    password: 'vp3ubcD-aTFi!aor'
+  datasource-quaternary:
+    driverClassName: "org.mariadb.jdbc.Driver"
+    url: jdbc:mariadb://dmz-trading-db01:3306/community
+    username: community
+    password: 'vOq9]EeAlAIYNZ-g'
+  datasource-quinary:
+    driverClassName: "org.mariadb.jdbc.Driver"
+    url: jdbc:mariadb://dmz-trading-db01:3306/common
+    username: common
+    password: 'YqtvZu_50/)YUnG0'
+  datasource-alarm:
+    driverClassName: "org.mariadb.jdbc.Driver"
+    url: jdbc:mariadb://dmz-trading-db01:3306/alarm
+    username: alarm
+    password: 'x*)8]wv298UPUKFs'
+  #datasource-primary:
+  #  driverClassName: "org.mariadb.jdbc.Driver"
+  #  url: jdbc:mariadb://lb:3306/discover
+  #  username: discover
+  #  password: 'Lsqr-2SLikQ8c_RQ'
+  #datasource-secondary:
+  #  driverClassName: "org.mariadb.jdbc.Driver"
+  #  url: jdbc:mariadb://lb:3306/fiin?serverTimezone=Asia/Ho_Chi_Minh
+  #  username: datafeed
+  #  password: 'BzaEQ[Wg2K3OR_VN'
+  #datasource-tertiary:
+  #  driverClassName: "org.mariadb.jdbc.Driver"
+  #  url: jdbc:mariadb://lb:3306/notification
+  #  username: notification
+  #  password: 'gqes1oV6]PxCEkt]'
+  #datasource-quaternary:
+  #  driverClassName: "org.mariadb.jdbc.Driver"
+  #  url: jdbc:mariadb://lb:3306/community
+  #  username: community
+  #  password: 'lcHrnpS2L[k3t/LF'
+  #datasource-quinary:
+  #  driverClassName: "org.mariadb.jdbc.Driver"
+  #  url: jdbc:mariadb://lb:3306/common
+  #  username: common
+  #  password: 'CVJKFAA0wHKyPamS'
+  #datasource-alarm:
+  #  driverClassName: "org.mariadb.jdbc.Driver"
+  #  url: jdbc:mariadb://lb:3306/alarm
+  #  username: alarm
+  #  password: '/TM59bsF[v]94xsB'
+  jpa:
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDB103Dialect
+        format_sql: true
+    show-sql: false
+#  jackson:
+#    time-zone: Asia/Ho_Chi_Minh
+#    date-format: yyyy-MM-dd HH:mm:ss
+  flyway:
+    enabled: false
+    baseline-on-migrate: false
+    url: jdbc:mariadb://dmz-trading-db01:3306/mysql
+    schemas: discover
+    user: admin
+    password: '8k0d3tUGeVIf/0J/'
+#  redis:
+#    type: cluster
+#    port: 26379
+#    password: 'GnmRuAjJMQzglLx'
+#    sentinel:
+#      master: mymaster
+#      nodes:
+#        - trading
+#    lettuce:
+#      shutdown-timeout: 200ms
+  redis:
+    type: single
+    host: localhost
+    port: 6379
+    username: default
+    password: GnmRuAjJMQzglLx
+  main:
+    allow-bean-definition-overriding: true
+  schedule:
+    enabled: true
+  elasticsearch:
+    uris: http://113.190.235.106:9200
+    socket-timeout: 30s
+    connection-timeout: 1s
+    username: elastic
+    password: -mwWTce5wz3ab1639SKl
+    host: 192.168.39.50
+    port: 9200
+springdoc:
+  api-docs:
+    path: /swagger/api-docs
+  swagger-ui:
+    path: /swagger/swagger-ui.html
+    groups-order: desc
+    url: /swagger/api-docs
+    enabled: true
+api:
+  server:
+    url: https://jbsv-wts.grooo.com.vn
+    description:
+  info:
+    title: JBSV-Discover API
+    description: Documentation JBSV-Discover API v${api.info.version}
+    version: 1.0
+
+logbook:
+  include:
+    - /api/**
+    - /internal/**
+  exclude:
+    - /swagger-ui.html
+    - /actuator/health
+  format:
+    style: splunk
+  strategy: default
+logging:
+  level:
+    root: WARN
+  #  org.springframework.web: DEBUG
+    org.zalando.logbook: TRACE
+    com.ftl: INFO
+    com.jbsv: INFO
+  file:
+    path: /app/logs
+
+app:
+  kafkaUrl: localhost:9092
+  clusterId: ${spring.application.name}
+  kafkaTimeout: 15000
+  nodeId: ${NODE_ID}
+  instanceId: ${spring.application.name}_${app.nodeId}_1
+  env: ${ENV}
+
+jbsv:
+  integrate:
+    wts:
+      domain: localhost:8888
+#      username: jbsv
+#      password: '@jbsv!Dev#'
+      ssl: false
+      timeoutMillis: 30000
+      readTimeoutMillis: 30000
+      connectTimeoutMillis: 30000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+
+news:
+  limitCount: 1
+  translateProjectId: translate-crawl-news

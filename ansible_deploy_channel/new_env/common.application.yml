@@ -1,0 +1,117 @@
+NODE_ID: 1
+
+ENV: prod
+
+server:
+  port: 8090
+  forward-headers-strategy: framework
+spring:
+#  config:
+#    import: 'optional:consul:'
+  application:
+    name: common-service
+#  cloud:
+#    consul:
+#      discovery:
+#        enabled: true
+#        register: true
+#        tags: owner=jbsv, project=common, env=development
+#        server-list-query-tags:
+#          env: development
+#  datasource:
+#    url: jdbc:h2:mem:testdb
+#    username: sa
+#    password:
+  datasource:
+    driverClassName: "org.mariadb.jdbc.Driver"
+    url: jdbc:mariadb://dmz-trading-db01:3306/common
+    username: common
+    password: 'YqtvZu_50/)YUnG0'
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+    show-sql: false
+  redis:
+    host: localhost
+    port: 6379
+    username: default
+    password: GnmRuAjJMQzglLx
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    url: jdbc:mariadb://dmz-trading-db01:3306/mysql
+    schemas: common
+    user: admin
+    password: '8k0d3tUGeVIf/0J/'
+  schedule:
+    enabled: true  
+#springdoc:
+#  api-docs:
+#    path: /swagger/api-docs
+#  swagger-ui:
+#    path: /swagger/swagger-ui.html
+#    groups-order: desc
+#    url: /swagger/api-docs
+#    enabled: true
+#api:
+#  server:
+#    url: https://jbsv-wts.grooo.com.vn
+#    description:
+#  info:
+#    title: JBSV-Common API
+#    description: Documentation JBSV-Common API v${api.info.version}
+#    version: 1.0
+
+#logbook:
+#  include:
+#    - /api/**
+#    - /internal/**
+#  exclude:
+#    - /swagger-ui.html
+#    - /actuator/health
+#  format:
+#    style: splunk
+#  strategy: default
+logging:
+  level:
+    root: WARN
+    org.springframework.web: DEBUG
+    org.zalando.logbook: TRACE
+    com.ftl: INFO
+    com.jbsv: INFO
+#  file:
+##    path: D:\\JBSV\\channel\\logs
+#    path: /app/logs
+
+app:
+  #  kafkaUrl: localhost:9092
+  #  kafkaUrl: 113.190.235.106:9093
+  kafkaUrl: localhost:9092
+  clusterId: ${spring.application.name}
+  kafkaTimeout: 15000
+  nodeId: ${NODE_ID}
+  instanceId: ${spring.application.name}_${app.nodeId}_1
+  env: ${ENV}
+  license: "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+PExpY2Vuc2U+PFBoYW5NZW0+Vk5QVC1DQSBQbHVnaW48L1BoYW5NZW0+PE5ndW9pQ2FwPlZOUFQgSVQ8L05ndW9pQ2FwPjxNb2R1bHVlPlNES0pBVkE8L01vZHVsdWU+PE5nYXlCYXREYXU+MDYvMjgvMjAyMyAwMDowMDowMDwvTmdheUJhdERhdT48TmdheUtldFRodWM+MDYvMjgvMjAyNiAwMDowMDowMDwvTmdheUtldFRodWM+PFNpZ25hdHVyZSB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC8wOS94bWxkc2lnIyI+PFNpZ25lZEluZm8+PENhbm9uaWNhbGl6YXRpb25NZXRob2QgQWxnb3JpdGhtPSJodHRwOi8vd3d3LnczLm9yZy9UUi8yMDAxL1JFQy14bWwtYzE0bi0yMDAxMDMxNSIgLz48U2lnbmF0dXJlTWV0aG9kIEFsZ29yaXRobT0iaHR0cDovL3d3dy53My5vcmcvMjAwMC8wOS94bWxkc2lnI3JzYS1zaGExIiAvPjxSZWZlcmVuY2UgVVJJPSIiPjxUcmFuc2Zvcm1zPjxUcmFuc2Zvcm0gQWxnb3JpdGhtPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwLzA5L3htbGRzaWcjZW52ZWxvcGVkLXNpZ25hdHVyZSIgLz48L1RyYW5zZm9ybXM+PERpZ2VzdE1ldGhvZCBBbGdvcml0aG09Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvMDkveG1sZHNpZyNzaGExIiAvPjxEaWdlc3RWYWx1ZT56aWNvTTUwMVU4WFdhVFFVWFNrRElhQUFObms9PC9EaWdlc3RWYWx1ZT48L1JlZmVyZW5jZT48L1NpZ25lZEluZm8+PFNpZ25hdHVyZVZhbHVlPkRBZWxzZVJReFAxdit3S0d4a1N3S0xwSlZkd28zQkdib1NxdTZ6QkVJN1pGVGdCUEhMcnB4RW5BUDI4VmZJdUxjVUhPTWVmKzVhWW1mWUNIcUdWdzBrOG9yeWNQS0xiZ1ptUFBqWkJSZUFYSVFRYTQ1RDdGMVBDTktuTElqN1ZUMUgvUnBpMXNVSld0MExYWUl2SXBVWU9WTS9WNmZHb2gwUVM1Qk9zYk8yT2hYQk5YSXhMbTd0a0p6dEVGTFVsRFpNVXFlYlkrbkpVRWVJblduZjZVd1ZJdWY2YXhxQ0VNSFpFY0VIY3krSmxuU04xeDh5aWlnVUJ1bWd1cFQ5M3BnZTJYT2dicXg1WjZQTkdXSzBDeXJiNFYxaldHbjBjK0FvZXVRd2pDTU1wRVpIWnJRanBXQmdFcm5zcE9KTlhsMjdNWmg1dldrbjZMRzZiakxEaDY2UT09PC9TaWduYXR1cmVWYWx1ZT48S2V5SW5mbz48S2V5VmFsdWU+PFJTQUtleVZhbHVlPjxNb2R1bHVzPnAyOGNVVG5vWEc5VW83NTRwandkWkdIOG1YNFZaUWtBeWtvcWhzQXB2Z1lQeVVRRWtCRTZkOXFzWkwzNkd2MWpGWjF2S2hvbkk2ZkxFeFZyYkhEbTkrRGVLZXpWSVpxUXZMaXM2M2czaHJtelJ0K2Mvb0F6YTZPUnFlQlZWbVBoQ1hPdy9KRHJ3eEgzQ0xacmxSMVhHeG1zcWxqaTcrVk0wcEMvQ0lraWcvNXRGdS9QQ3VUY1RZL05mL3lmbU1UOTdOaXk5Tm5GTlg1Y1FxREVZNWxTQ0Rvb3kwaHBTQ25jWVFzdUxjUUpBZll6dnp3OW9vT2pGallPVXZtY2VtREMxLzBFRTlkYldsV2V0Zm5WTmI4c3pvcXNMQnJMQURCMUNoU2ZubDlvUUZ6R1FWYTBSaUo5eE93UG9KMjVqUWRWaW1FMTh2VE1aV1p0bUdOUzJyKytPUT09PC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48L1JTQUtleVZhbHVlPjwvS2V5VmFsdWU+PFg1MDlEYXRhPjxYNTA5Q2VydGlmaWNhdGU+TUlJR1JUQ0NCQzJnQXdJQkFnSVFWQUVrajN5WFJFSTd3SzdLUi9jSHNqQU5CZ2txaGtpRzl3MEJBUVVGQURCcE1Rc3dDUVlEVlFRR0V3SldUakVUTUJFR0ExVUVDaE1LVms1UVZDQkhjbTkxY0RFZU1Cd0dBMVVFQ3hNVlZrNVFWQzFEUVNCVWNuVnpkQ0JPWlhSM2IzSnJNU1V3SXdZRFZRUURFeHhXVGxCVUlFTmxjblJwWm1sallYUnBiMjRnUVhWMGFHOXlhWFI1TUI0WERURTNNREl5TnpBNU16SXdNRm9YRFRFNU1ESXlOekl4TXpJd01Gb3dnWW94Q3pBSkJnTlZCQVlUQWxaT01SSXdFQVlEVlFRSURBbEl3NEFnVHVHN21Fa3hGVEFUQmdOVkJBY01ERVBodXFkMUlFZHA0YnFsZVRFc01Db0dBMVVFQXd3alZrNVFWQ0JUVDBaVVYwRlNSU0F0SUZaT1VGUWdRMEVnTFNCVVJWTlVJRk5KUjA0eElqQWdCZ29Ka2lhSmsvSXNaQUVCREJKTlUxUTZNVEF4TmpnMk9UY3pPQzB3TVRJd2dnRWlNQTBHQ1NxR1NJYjNEUUVCQVFVQUE0SUJEd0F3Z2dFS0FvSUJBUUNuYnh4Uk9laGNiMVNqdm5pbVBCMWtZZnlaZmhWbENRREtTaXFHd0NtK0JnL0pSQVNRRVRwMzJxeGt2Zm9hL1dNVm5XOHFHaWNqcDhzVEZXdHNjT2IzNE40cDdOVWhtcEM4dUt6cmVEZUd1Yk5HMzV6K2dETnJvNUdwNEZWV1krRUpjN0Q4a092REVmY0l0bXVWSFZjYkdheXFXT0x2NVV6U2tMOElpU0tEL20wVzc4OEs1TnhOajgxLy9KK1l4UDNzMkxMMDJjVTFmbHhDb01Sam1WSUlPaWpMU0dsSUtkeGhDeTR0eEFrQjlqTy9QRDJpZzZNV05nNVMrWng2WU1MWC9RUVQxMXRhVlo2MStkVTF2eXpPaXF3c0dzc0FNSFVLRkorZVgyaEFYTVpCVnJSR0luM0U3QStnbmJtTkIxV0tZVFh5OU14bFptMllZMUxhdjc0NUFnTUJBQUdqZ2dIRk1JSUJ3VEJ3QmdnckJnRUZCUWNCQVFSa01HSXdNZ1lJS3dZQkJRVUhNQUtHSm1oMGRIQTZMeTl3ZFdJdWRtNXdkQzFqWVM1MmJpOWpaWEowY3k5MmJuQjBZMkV1WTJWeU1Dd0dDQ3NHQVFVRkJ6QUJoaUJvZEhSd09pOHZiMk56Y0M1MmJuQjBMV05oTG5adUwzSmxjM0J2Ym1SbGNqQWRCZ05WSFE0RUZnUVViSDRodEZzT2JMRDFrME5vQ1hqeUZUdlpDUXN3REFZRFZSMFRBUUgvQkFJd0FEQWZCZ05WSFNNRUdEQVdnQlFHYWNEVjFRS0tGWTFHZmVsODRtZ0tWYXhxcnpCb0JnTlZIU0FFWVRCZk1GMEdEaXNHQVFRQmdlMERBUUVEQVFFQ01Fc3dJZ1lJS3dZQkJRVUhBZ0l3Rmg0VUFFOEFTUUJFQUMwQVVBQnlBQzBBTWdBdUFEQXdKUVlJS3dZQkJRVUhBZ0VXR1doMGRIQTZMeTl3ZFdJdWRtNXdkQzFqWVM1MmJpOXljR0V3TVFZRFZSMGZCQ293S0RBbW9DU2dJb1lnYUhSMGNEb3ZMMk55YkM1MmJuQjBMV05oTG5adUwzWnVjSFJqWVM1amNtd3dEZ1lEVlIwUEFRSC9CQVFEQWdUd01EUUdBMVVkSlFRdE1Dc0dDQ3NHQVFVRkJ3TUNCZ2dyQmdFRkJRY0RCQVlLS3dZQkJBR0NOd29EREFZSktvWklodmN2QVFFRk1Cd0dBMVVkRVFRVk1CT0JFVEZqYUhWamRYVkFaMjFoYVd3dVkyOXRNQTBHQ1NxR1NJYjNEUUVCQlFVQUE0SUNBUUF5cWlKUHZ2a0NNTUYzQkJpUFozR25laG53dmh0bURSSmpaUlJObWI1MjJMdzh5U3FJcG81N2dYSVNuTGUzcVd5QzBHQ1dhVnMvV0o2VEpnM2ZCMUdhSHAydUpHOGhHVjBnNU1KbmdnQWtXSUhIYmtoa3lYbEtkL3h4dkY3bENXc2xoN09Mby9Ed0p6UGNBUUtkRG1vc0RMa0x1dGxqaXJLZ1AxMThYbVRwSmU5Y25oVEdXeG1SNDNSWG8xcEs2TVpKUy8zNUEwYUVjVUZ3bGt5T0pwRnV6K0dyanEycUsyWXNUcHZOSW53M0xaRHdSa2tZamhtSk9FK2Z1a3FmcDhXRmNCdEVHcVdEYUJibXFnWnZjaXQ5cytSb2kzV2VPTXhVS3JpMGZTQUtEY3V4bmY0cnhpZlEwQmJhczlIVW1ObTY1VkVzbStmNUIwdmRTbTZTN1g4Wm81NHVRdFJnL0hkMWFDUHkwQUZkZmFIaSs2YWRxcjJacTNwdE1JUzEwN2xDZHEyNkt5TjNSTXhZdmg1TlpzZzg4SmM5SU5sR3hMNThXRDlFQjdNekZrV21uR2I5SmMxdWtBRWFQWkE5dndaV1pVQXRwV09JZFR4Tm1VdnNaZGxWQTl2RGMvVG5KUmJVazBhQ3d2cVZXTWFqUFBvenQ4L0N2ekhxd2NPdWdrRnVjNys4TTlSRmkrUnRaWEEra3JUTmduVEtKUkhkMTYzZFdzeTNmcHlGVTlQQWN5a3lUS3FGZmlsRmpOaUc4N1gwTVpycDRsTFJjU3VGa2dIWTZyL2lJa0x2Rk02RElyVEpTeERQM2JYbzlqRmw5UU9hYlNOZm9QeEttNDF1NUdxcGVKWGpsTk5BREkrR050V1E2ZzNaMm11WVdwUzU0TlVkSk5yeUdQeUx4QT09PC9YNTA5Q2VydGlmaWNhdGU+PC9YNTA5RGF0YT48L0tleUluZm8+PE9iamVjdD48U2lnbmF0dXJlUHJvcGVydGllcyB4bWxucz0iIj48U2lnbmF0dXJlUHJvcGVydHkgSWQ9IlNpZ25pbmdUaW1lIiBUYXJnZXQ9InNpZ25hdHVyZVByb3BlcnRpZXMiPjxTaWduaW5nVGltZT4yMDIzLTA2LTI4VDA4OjA1OjQ0WjwvU2lnbmluZ1RpbWU+PC9TaWduYXR1cmVQcm9wZXJ0eT48L1NpZ25hdHVyZVByb3BlcnRpZXM+PC9PYmplY3Q+PC9TaWduYXR1cmU+PC9MaWNlbnNlPg=="
+  fileUploads:
+    enMTSHome: mts/en_mts_home.json
+    viMTSHome: mts/vi_mts_home.json
+  minio:
+    bucketName: public
+    endpoint: localhost
+    port: 9000
+    accessKey: TAFtpPcP1bv9UXwG
+    secretKey: zuQpu2nBTntmnpkrV9LcecEC5m8zA7FL
+    useSSL: false
+    bucketPolicy: >
+      {"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":["*"]},"Action":["s3:GetBucketLocation"],"Resource":["arn:aws:s3:::report"]},{"Effect":"Allow","Principal":{"AWS":["*"]},"Action":["s3:GetObject"],"Resource":["arn:aws:s3:::report/*"]}]}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

@@ -1,0 +1,147 @@
+NODE_ID: 1
+ENV: dev
+
+server:
+  port: 8083
+#  forward-headers-strategy: framework
+spring:
+  application:
+    name: community-service
+  datasource-primary:
+    driverClassName: "org.mariadb.jdbc.Driver"
+    url: jdbc:mariadb://dmz-trading-db01:3306/community
+    username: community
+    password: 'vOq9]EeAlAIYNZ-g'
+  datasource-secondary:
+    driverClassName: "org.mariadb.jdbc.Driver"
+    url: jdbc:mariadb://dmz-trading-db01:3306/notification
+    username: notification
+    password: 'vp3ubcD-aTFi!aor'
+  datasource-tertiary:
+    driverClassName: "org.mariadb.jdbc.Driver"
+    url: jdbc:mariadb://dmz-trading-db01:3306/common
+    username: common
+    password: 'YqtvZu_50/)YUnG0'
+  datasource-alarm:
+    driverClassName: "org.mariadb.jdbc.Driver"
+    url: jdbc:mariadb://dmz-trading-db01:3306/alarm
+    username: alarm
+    password: 'x*)8]wv298UPUKFs'
+  jpa:
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDB103Dialect
+        format_sql: true
+    show-sql: true
+  redis:
+    type: single
+    host: localhost
+    port: 6379
+    username: default
+    password: GnmRuAjJMQzglLx
+
+#  redis:
+#    type: cluster
+#    port: 26379
+#    password: 'GnmRuAjJMQzglLx'
+#    sentinel:
+#      master: mymaster
+#      nodes:
+#        - trading
+#    lettuce:
+#      shutdown-timeout: 200ms
+
+  elasticsearch:
+#    uris: http://113.190.235.106:9200
+#    socket-timeout: 30s
+#    connection-timeout: 1s
+    username: elastic
+    password: HaH7C*WWmN+bRkql3jlk
+    host: 192.168.41.5
+    port: 9200
+  main:
+    allow-bean-definition-overriding: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    url: jdbc:mariadb://dmz-trading-db01:3306/mysql
+    schemas: community
+    user: admin
+    password: '8k0d3tUGeVIf/0J/'
+  schedule:
+    enabled: true
+
+logbook:
+  include:
+    - /api/**
+    - /internal/**
+  exclude:
+    - /swagger-ui.html
+    - /actuator/health
+  format:
+    style: splunk
+  strategy: default
+logging:
+  pattern:
+    dateformat: yyyy-MM-dd HH:mm:ss,Asia/Ho_Chi_Minh
+  level:
+    root: WARN
+    #    org.springframework.web: DEBUG
+    org.zalando.logbook: TRACE
+    com.ftl: INFO
+    com.jbsv: DEBUG
+  file:
+    path: /app/logs
+
+app:
+  kafkaUrl: localhost:9092
+  clusterId: ${spring.application.name}
+  kafkaTimeout: 15000
+  nodeId: ${NODE_ID}
+  instanceId: ${spring.application.name}_${app.nodeId}_1
+  env: ${ENV}
+  static_rate: 30000
+
+api:
+  server:
+    url: https://jbsv-wts.grooo.com.vn
+    description}:
+  info:
+    title: JBSV-Community API
+    description: Documentation JBSV-Community API v${api.info.version}
+    version: 1.0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+jbsv:
+  integrate:
+    wts:
+      domain: localhost:8888
+      ssl: false
+      timeoutMillis: 30000
+      readTimeoutMillis: 30000
+      connectTimeoutMillis: 30000
+    filter-content:
+      enabled: true
+      domain: 0.0.0.0:10040
+      ssl: false
+      timeoutMillis: 30000
+      readTimeoutMillis: 30000
+      connectTimeoutMillis: 30000
+    core-admin:
+      domain : 127.0.0.1:8095
+      enabled: true
+      username: 'Admin'
+      password: '123456'
+      timeoutMillis: 30000
+      readTimeoutMillis: 30000
+      connectTimeoutMillis: 30000
+

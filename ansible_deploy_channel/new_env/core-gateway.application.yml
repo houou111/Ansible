@@ -1,0 +1,22 @@
+NODE_ID: 1
+
+ENV: prod
+
+server:
+  port: 8095
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: coreservice
+          #uri: http://192.168.32.2:8082
+          uri: http://192.168.150.12:8081
+          predicates:
+            - Path=/**
+logging:
+  level:
+    root: WARN
+    org.springframework.web: DEBUG
+  file:
+    path: /app/logs

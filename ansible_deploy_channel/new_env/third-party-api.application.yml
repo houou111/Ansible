@@ -1,0 +1,142 @@
+NODE_ID: 1
+ENV: prod
+jwt:
+  privateKey: MIIEowIBAAKCAQBedsgOCLbR1nA3/76QS6tzlfWe1Ezp0lQy0T19VuuF/EDLerNf\nYbkSvSecQJTBxqoIddrses0ER2hk2WL2wMYcXYGXiOCbSw7OLqchIfoujAt4dL2V\nTxbShYBg8gRz4t6eXfrFmDsLexD65DU7BrbMnotPeRhuwZPXxKkNkRWsYuUge+nP\nPpnua8dVRddi24cvLEdx3/Og8CyXg9tMb4awTXAvsRMrFsKCFw9oQM46RNneahdC\nS6QbfN+qR6sBi7PsqelijR4wNutb4Z/YtA4i86qpjBPAeqXcmgGNowa1lPFC1e0z\n/qCLMmJZe2T3RnK4YWrIXCpWvHPg56QJEsUpAgMBAAECggEAKnOe/A+WeT6xN7lK\n3nXjGxKtSy+FUR8gj6XQyF8jgRcX11nQ+nBkR7OR9XpgX6T0DNFKDTQyplWg6JF5\nFAMWBPFQp9Tve1qD0MzOdulaEUkGbp+oA02DqCAuzWJ19c5i1TDO3bXH8yTfQKEF\n+vzNca9eU9zLyhpcYn8SqfIll05eSaRiBSep/r+rZ5Hkj17NpZxT+bnlz63ZHKpS\nEUuhuK21q5lhkahCbXfDPC11ot+n24afjRVV1s1PL6Q/mI7umR33nLJPPCcSR9rx\nfKenEYv3olBlHLriJzq+jPa8O8WMjmnvqYWISINa2A0LLoqEkOI9sNFxXbbiefyu\ntMNAAQKBgQCkBkUCzbN72iMCcZIoc6LDpt2wUNXq83YMZDQ1xBzNcuzRIdG97m6t\n2M3zD3fkZ9mPoK9q52BlOvuLf6eI8HvncC2Y5FgH8Q7ZDAQmBtyJE54QhqBd4oLI\nJmyN4/brSjaw5TlDJQpN4X9aa9a0qWfeD7Huh4X71kI/Iy7BbRAXKQKBgQCTbxiE\nh0hwY9HpcA0AmDOtw4kFtahxYu+9k0blXuYvYVU7SsuBOjT2MGlVwAGa3CSd5q6m\nwo5Rppaf4kb+UVOaxFjYIuOFT3pHGYvT8WbWcUAsqmDZqzTTKI7SnjACFhDRu5qq\nGQ/GNyP25ZzfWXejnVOa0qm6hY0nNWcIxcj+AQKBgQCI5uK60E26VftakshXEw0L\nGD94Zj/l9obVGN2q8qDHqeCXPQ7+4/9lAswCzypWbYddJdTD+ZKva2eAq29+EJqa\nNTsZnZ0MI9sstabQxnFTyBfp2zQGqIRX4hpA48C36h1z0B7XOBc9obTWF6QA7lRP\nN/JfEKZ36AErCYaA0zLW4QKBgQCNOQWLLOq+fV889BAAWcpmz74YsgE/Wz25obFv\nVI+5Isq5mNOGXXMNvyGm+dyPsf+BIM56/jHFFIWDcQP/53bl8N4JaqH1uEOwh0/h\nHIMdNi36mtlapxxah6cHKG9kEC7cN4/XD1qEy5yvixHQ/6oSF0lWLCRYfkTPIeAo\nDwyQAQKBgHVlSv7gCyQJ66m1tdGKJyMYLvGocF3d2fbzBXqJgG0Yl2FSB37fikNk\njGRkfRt8YqGW2lc9gv2LrumoUsglG86If0GK0ryhRRO7RbI8IRowAtPmAUwzrxYO\nfcPwOyKivyFBYaoUDKeKJw8rlmJRjGKMflSNnBkXJCTdttl+TLtr
+server:
+  port: 9083
+#  forward-headers-strategy: framework
+spring:
+  application:
+    name: third-party-api
+  jackson:
+    time-zone: 'Asia/Ho_Chi_Minh'
+  datasource:
+    driverClassName: "org.mariadb.jdbc.Driver"
+    url: jdbc:mariadb://192.168.44.11:3306/third_party_api?useLegacyDatetimeCode=false&serverTimezone=Asia/Ho_Chi_Minh
+    username: third_party_api
+    password: Abcd#123456
+    #password: 'Trung_123456'
+    #url: jdbc:mariadb://lb:3306/event
+    #username: event
+    #password: '5mnBlHANbEv[0vJa'
+    datasource-secondary:
+      driverClassName: "org.mariadb.jdbc.Driver"
+      url: jdbc:mariadb://192.168.44.11:3306/notification
+      username: notification
+      password: 'gqes1oV6]PxCEkt]'
+  jpa:
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+      jdbc:
+        time-zone: 'Asia/Ho_Chi_Minh'
+      dialect: org.hibernate.dialect.MariaDB103Dialect
+      format_sql: true
+    show-sql: true
+  #  jackson:
+  #    time-zone: Asia/Ho_Chi_Minh
+  #    date-format: yyyy-MM-dd HH:mm:ss
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    url: jdbc:mariadb://192.168.44.11:3306/mysql
+    schemas: event
+    user: admin
+    password: 'yCl8l0puFB4mvI@a'
+  redis:
+    type: cluster
+    port: 26379
+    password: 'jbsvredis2023'
+    sentinel:
+      master: mymaster
+      nodes:
+        - trading1
+        - trading2
+        - trading3
+    lettuce:
+      shutdown-timeout: 200ms
+  schedule:
+    enabled: true
+springdoc:
+  api-docs:
+    path: /swagger/api-docs
+  swagger-ui:
+    path: /swagger/swagger-ui.html
+    groups-order: desc
+    url: /swagger/api-docs
+
+logbook:
+  include:
+    - /api/**
+    - /internal/**
+  exclude:
+    - /swagger-ui.html
+    - /actuator/health
+  format:
+    style: splunk
+  strategy: default
+logging:
+  level:
+    root: WARN
+    #    org.springframework.web: DEBUG
+    org.zalando.logbook: TRACE
+    com.jbsv: INFO
+    com.ftl: WARN
+  file:
+    path: /app/logs
+  path: /app/logs
+
+app:
+  kafkaUrl: localhost:9092
+  clusterId: ${spring.application.name}
+  kafkaTimeout: 15000
+  nodeId: ${NODE_ID}
+  instanceId: ${spring.application.name}_${app.nodeId}_1
+  env: ${ENV}
+  websocketUri: ws://192.168.32.6:5000/notify
+  reconnectionDelay: 5000
+  coreChannel: socket
+  infinaUrl: https://partner.infina.vn
+  infinaSecret: gkq4t9kfdt48eb8a418a1357r582f7c4efg5cbd358jf8fegfd3rffd6ghdf443j
+  topics:
+    notification: "notification"
+    userEvent: "user-event"
+    coreEvent: "USER_DATA"
+    marketCollector: "market-collector"
+
+api:
+  server:
+    url: https://jbsv-wts.grooo.com.vn
+    description}:
+  info:
+    title: JBSV-Third Party API
+    description: Documentation JBSV-Third Party API v${api.info.version}
+    version: 1.0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+      cors:
+        allowed-origins: "http://localhost:2017"
+        allowed-methods: GET, POST, PATCH, PUT, DELETE, OPTIONS, HEAD
+        max-age: 3600
+        allowed-headers: "Requestor-Type"
+        exposed-headers: "X-Get-Header"
+
+
+jbsv:
+  integrate:
+    core-admin:
+      domain : http://192.168.41.5:8095
+      enabled: true
+      username: 'CHANEL'
+      password: '123456@'
+      timeoutMillis: 30000
+      readTimeoutMillis: 30000
+      connectTimeoutMillis: 30000
+

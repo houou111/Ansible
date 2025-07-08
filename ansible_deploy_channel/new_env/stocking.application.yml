@@ -1,0 +1,154 @@
+
+NODE_ID: 1
+
+ENV: prod
+
+server:
+  port: 8091
+  forward-headers-strategy: framework
+spring:
+  application:
+    name: stocking-service
+  #multisession : MULTIPLESESSION
+  datasource-user-utilities:
+    driver-class-name: "org.mariadb.jdbc.Driver"
+    url: jdbc:mariadb://dmz-trading-db01:3306/user_utilities?useLegacyDatetimeCode=false&serverTimezone=Asia/Ho_Chi_Minh
+    username: user_utilities
+    password: 'RWq!N5Ae2Ks)]!9G'
+  datasource-stocking:
+    driver-class-name: "org.mariadb.jdbc.Driver"
+    url: jdbc:mariadb://dmz-trading-db01:3306/stocking?useLegacyDatetimeCode=false&serverTimezone=Asia/Ho_Chi_Minh
+    username: stocking
+    password: 'YxXUAariXWOiXBd8'
+  datasource-notification:
+    driverClassName: "org.mariadb.jdbc.Driver"
+    url: jdbc:mariadb://dmz-trading-db01:3306/notification?useLegacyDatetimeCode=false&serverTimezone=Asia/Ho_Chi_Minh
+    username: notification
+    password: 'vp3ubcD-aTFi!aor'
+  symbol-daily:
+    databaseName : grooo-market
+    username: market
+    password: 's59PFm)u4WNHrZge'
+    url: mongodb://${spring.symbol-daily.username}:${spring.symbol-daily.password}@localhost/grooo-market
+  datasource-common:
+    driverClassName: "org.mariadb.jdbc.Driver"
+    url: jdbc:mariadb://dmz-trading-db01:3306/common?useLegacyDatetimeCode=false&serverTimezone=Asia/Ho_Chi_Minh
+    username: common
+    password: 'YqtvZu_50/)YUnG0'
+  jackson:
+    time-zone: 'Asia/Ho_Chi_Minh'
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        jdbc:
+          time-zone: 'Asia/Ho_Chi_Minh'
+#        dialect: org.hibernate.dialect.H2Dialect
+        dialect: org.hibernate.dialect.MariaDB103Dialect
+        format_sql: true
+    show-sql: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    url: jdbc:mariadb://dmz-trading-db01:3306/stocking
+    schemas: stocking
+#    user: stocking
+#    password: 'YxXUAariXWOiXBd8'
+    user: admin
+    password: '8k0d3tUGeVIf/0J/'
+  redis:
+    type: single
+    host: localhost
+    port: 6379
+    username: default
+    password: GnmRuAjJMQzglLx
+#  redis:
+#    type: cluster
+#    port: 6379
+#    password: 'GnmRuAjJMQzglLx'
+#    sentinel:
+#      master: mymaster
+#      nodes:
+#        - trading1
+#        - trading2
+#        - trading3
+#    lettuce:
+#      shutdown-timeout: 200ms
+  main:
+    allow-bean-definition-overriding: true
+  schedule:
+    enabled: false
+
+springdoc:
+  api-docs:
+    path: /swagger/api-docs
+  swagger-ui:
+    path: /swagger/swagger-ui.html
+    groups-order: desc
+    url: /swagger/api-docs
+    enabled: true
+api:
+  server:
+    url: https://jbsv-dev-api.grooo.com.vn
+    description:
+  info:
+    title: JBSV-Stocking API
+    description: Documentation JBSV-Stocking API v${api.info.version}
+    version: 1.0
+
+logbook:
+  include:
+    - /api/**
+    - /internal/**
+  exclude:
+    - /swagger-ui.html
+    - /actuator/health
+  format:
+    style: splunk
+  strategy: default
+logging:
+  level:
+    root: WARN
+    org.zalando.logbook: TRACE
+    com.ftl: INFO
+    com.jbsv: INFO
+    org:
+      hibernate:
+        SQL: ERROR
+        type: ERROR
+  file:
+#    path: D:\\JBSV\\channel\\logs
+    path: /app/logs
+
+app:
+  kafkaUrl: localhost:9092
+  clusterId: ${spring.application.name}
+  kafkaTimeout: 15000
+  nodeId: ${NODE_ID}
+  instanceId: ${spring.application.name}_${app.nodeId}_1
+  env: ${ENV}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+jbsv:
+  integrate:
+    core-admin:
+      domain : 127.0.0.1:8095
+      enabled: true
+      username: 'Admin'
+      password: '123456'
+      timeoutMillis: 30000
+      readTimeoutMillis: 30000
+      connectTimeoutMillis: 30000
+stockking:
+    startDate: '01/05/2023'
+    endDate: '01/10/2023'
+    multisession : MULTIPLESESSION
+    startTime : '15:30:00'
+    duration : '63900'
+    passTest : '123456'
