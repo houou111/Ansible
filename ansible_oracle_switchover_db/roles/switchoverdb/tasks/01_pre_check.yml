@@ -1,0 +1,182 @@
+- name: Create Workspace directory
+  file:
+    path: /home/oracle/workspace
+    state: directory
+    mode: 0755
+    owner: oracle
+    group: oinstall
+  tags:
+    - pre_check_database
+
+- name: Copy Script verify Database Node02 for RAC is idle (shutdown) status when Switchover DR to DC
+  template:
+    src: templates/verify_db_node02_shutdown_dr_to_dc.sh.j2
+    dest: /home/oracle/workspace/verify_db_node02_shutdown_dr_to_dc.sh
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  when: 
+    - groups['db_standby'][1] is defined
+    - inventory_hostname == groups['db_standby'][1]
+  tags:
+    - pre_check_database 
+
+- name: Run script to verify Database Node02 for RAC is idle (shutdown) status when Switchover DR to DC
+  shell: su - oracle -c '/home/oracle/workspace/verify_db_node02_shutdown_dr_to_dc.sh'
+  register: verify_db_node02_shutdown_dr_to_dc
+  when: 
+    - groups['db_standby'][1] is defined
+    - inventory_hostname == groups['db_standby'][1]
+  tags:
+    - pre_check_database
+
+- name: Verify Database Node02 for RAC is idle (shutdown) status when Switchover DR to DC
+  assert:
+    that:
+      - '"Connected to an idle instance" in verify_db_node02_shutdown_dr_to_dc.stdout'
+    success_msg: "PASSED - Database Node02 for RAC is idle (shutdown) status"
+    fail_msg: "FAILED - Database Node02 for RAC is NOT idle (shutdown) status"
+  when: 
+    - groups['db_standby'][1] is defined
+    - inventory_hostname == groups['db_standby'][1]
+  tags:
+    - pre_check_database
+
+- name: Copy Script verify primary role to Primary Database
+  template:
+    src: templates/verify_primary_role.sh.j2
+    dest: /home/oracle/workspace/verify_primary_role.sh
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  when: inventory_hostname in groups['db_primary']
+  tags:
+    - pre_check_database
+
+- name: Run script to verify primary role
+  shell: su - oracle -c '/home/oracle/workspace/verify_primary_role.sh'
+  register: verify_primary_role
+  when: inventory_hostname in groups['db_primary']
+  tags:
+    - pre_check_database
+
+- name: Verify database primary role
+  assert:
+    that:
+      - '"READ WRITE" in verify_primary_role.stdout'
+      - '"PRIMARY" in verify_primary_role.stdout'
+    success_msg: "PASSED - Database Primary Role is correct"
+    fail_msg: "FAILED - Database Primary Role is NOT correct"
+  when: inventory_hostname in groups['db_primary']
+  tags:
+    - pre_check_database
+
+- name: Copy Script verify standby role to Standby Database
+  template:
+    src: templates/verify_standby_role.sh.j2
+    dest: /home/oracle/workspace/verify_standby_role.sh
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  when: inventory_hostname in groups['db_standby']
+  tags:
+    - pre_check_database
+
+- name: Run script to verify standby role
+  shell: su - oracle -c '/home/oracle/workspace/verify_standby_role.sh'
+  register: verify_standby_role
+  when: inventory_hostname == groups['db_standby'][0]
+  tags:
+    - pre_check_database
+
+- name: Verify database standby role
+  assert:
+    that:
+      - '"READ ONLY" in verify_standby_role.stdout'
+      - '"STANDBY" in verify_standby_role.stdout'
+    success_msg: "PASSED - Database Standby Role is correct"
+    fail_msg: "FAILED - Database Standby Role is NOT correct"
+  when: inventory_hostname == groups['db_standby'][0]
+  tags:
+    - pre_check_database
+
+- name: Copy Script check switchover status to Primary Database
+  template:
+    src: templates/check_switchover_status_primary.sh.j2
+    dest: /home/oracle/workspace/check_switchover_status_primary.sh
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  when: inventory_hostname in groups['db_primary']
+  tags:
+    - pre_check_database
+
+- name: Run script to check switchover status primary
+  shell: su - oracle -c '/home/oracle/workspace/check_switchover_status_primary.sh'
+  register: check_switchover_status_primary
+  when: inventory_hostname in groups['db_primary']
+  tags:
+    - pre_check_database
+
+- name: Verify Primary Database SwitchOver Status
+  assert:
+    that: ("'SESSION ACTIVE' in check_switchover_status_primary.stdout") or ("'TO STANDBY' in check_switchover_status_primary.stdout")
+    success_msg: "PASSED - Primary Database available for switching"
+    fail_msg: "FAILED - Primary Database NOT available for switching"
+  when: inventory_hostname in groups['db_primary']
+  tags:
+    - pre_check_database
+
+- name: Copy Script check switchover status to Standby Database
+  template:
+    src: templates/check_switchover_status_standby.sh.j2
+    dest: /home/oracle/workspace/check_switchover_status_standby.sh
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  when: inventory_hostname in groups['db_standby']
+  tags:
+    - pre_check_database
+
+- name: Run script to check switchover status standby
+  shell: su - oracle -c '/home/oracle/workspace/check_switchover_status_standby.sh'
+  register: check_switchover_status_standby
+  when: inventory_hostname == groups['db_standby'][0]
+  tags:
+    - pre_check_database
+
+- name: Verify Standby Database SwitchOver Status
+  assert:
+    that: "'NOT ALLOWED' in check_switchover_status_standby.stdout"
+    success_msg: "PASSED - Standby Database available for switching"
+    fail_msg: "FAILED - Standby Database NOT available for switching"
+  when: inventory_hostname == groups['db_standby'][0]
+  tags:
+    - pre_check_database
+
+- name: Copy Script verify switchover to standby
+  template:
+    src: templates/verify_switchover.sh.j2
+    dest: /home/oracle/workspace/verify_switchover.sh
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  when: 
+    - inventory_hostname in groups['db_primary']
+  tags:
+    - pre_check_database
+
+- name: Run script to verify switchover to standby
+  shell: su - oracle -c '/home/oracle/workspace/verify_switchover.sh'
+  register: verify_switchover
+  until: "'Database altered' in verify_switchover.stdout"
+  retries: 5
+  delay: 5
+  when: 
+    - inventory_hostname in groups['db_primary']
+  tags:
+    - pre_check_database
+
+- debug: msg="All pre-check have been passed"
+  tags:
+    - pre_check_database

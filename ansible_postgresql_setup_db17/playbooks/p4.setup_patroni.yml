@@ -1,0 +1,6 @@
+---
+- name: Setup Patroni
+  hosts: postgresql
+  become: yes
+  roles:
+    - { role: R3.patroni }

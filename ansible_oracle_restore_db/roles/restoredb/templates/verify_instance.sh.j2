@@ -1,0 +1,11 @@
+#!/bin/bash
+function check_instance_existing {
+
+if [[ `/bin/ps -ef | grep -v grep | grep "ora_pmon_{{ db_instance }}"` ]]; then
+        echo "FAILED - Instance existing and NOT available for restoring"
+else
+        echo "PASSED - Instance NOT existing and available for restoring"
+fi
+}
+
+check_instance_existing

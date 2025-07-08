@@ -1,0 +1,6 @@
+#!/bin/bash
+. {{ primary_db_profile }}
+sqlplus / as sysdba <<EOF
+select name,open_mode,database_role from v\$database;
+exit;
+EOF

@@ -1,0 +1,74 @@
+---
+# Display installation information and get user confirmation
+- name: R3.1 Display Patroni installation information
+  ansible.builtin.debug:
+    msg: |
+      ===========================================
+      PATRONI INSTALLATION INFORMATION
+      ===========================================
+      Cluster Name: {{ patroni_cluster_name }}
+      Scope: {{ patroni_scope }}
+      Node Name: {{ patroni_name }}
+      ETCD Hosts: {{ patroni_etcd.hosts | to_json }}
+      ===========================================
+      Do you want to proceed with the installation?
+      Please enter '1' for yes or '0' for no.
+  run_once: true
+  delegate_to: "{{ groups['postgresql'][0] }}"
+
+- name: R3.2 Get user confirmation
+  ansible.builtin.pause:
+    prompt: "Enter 1 to continue or 0 to abort"
+    echo: yes
+  register: user_confirmation
+  run_once: true
+  delegate_to: "{{ groups['postgresql'][0] }}"
+
+- name: R3.3 Set fact for user confirmation
+  ansible.builtin.set_fact:
+    confirmed: "{{ user_confirmation.user_input == '1' }}"
+  run_once: true
+  delegate_to: "{{ groups['postgresql'][0] }}"
+
+- name: R3.4 Abort if user did not confirm
+  ansible.builtin.fail:
+    msg: "Installation aborted by user"
+  when: not confirmed
+  run_once: true
+  delegate_to: "{{ groups['postgresql'][0] }}"
+
+# Install EPEL repository
+- name: R3.5 Install EPEL repository
+  ansible.builtin.command:
+    cmd: "sudo dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm"
+
+# Install required Python packages for Patroni
+- name: R3.6 Install Python dependencies for Patroni
+  ansible.builtin.command:
+    cmd: "sudo dnf install -y python3-pyyaml python3-psutil python3-click python3-urllib3 python3-prettytable"
+
+# Add PGDG repository for Patroni
+- name: R3.7 Add PGDG repository for Patroni
+  ansible.builtin.command:
+    cmd: "sudo dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
+
+# Install Patroni
+- name: R3.8 Install Patroni
+  ansible.builtin.command:
+    cmd: "sudo dnf --disablerepo=* --enablerepo=pgdg-rhel9-extras install -y patroni"
+
+# Configure Patroni
+- name: R3.9 Configure Patroni
+  ansible.builtin.template:
+    src: patroni.yml.j2
+    dest: "{{ patroni_config_dir }}/patroni.yml"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: '0600'
+
+# Start and enable Patroni service
+- name: R3.10 Start and enable Patroni service
+  ansible.builtin.service:
+    name: patroni
+    state: started
+    enabled: yes 

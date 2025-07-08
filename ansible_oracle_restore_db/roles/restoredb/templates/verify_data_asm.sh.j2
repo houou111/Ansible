@@ -1,0 +1,10 @@
+#!/bin/bash
+. {{ db_grid_profile }} > /dev/null 2>&1
+function check_asm_data_existing {
+if [[ `{{ db_grid_home }}/bin/asmcmd ls {{ db_create_file_dest }} | grep -i {{ db_instance }}` ]] || [[ `{{ db_grid_home }}/bin/asmcmd ls {{ db_recovery_file_dest }} | grep -i {{ db_instance }}` ]]; then
+        echo "FAILED - data ASM existing and NOT available for restoring"
+else
+        echo "PASSED - data ASM NOT existing and available for restoring"
+fi
+}
+check_asm_data_existing

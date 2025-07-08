@@ -1,0 +1,6 @@
+- name: Cleanup Workspace directory
+  file:
+    path: /home/oracle/workspace
+    state: absent
+  tags:
+    - cleanup_workspace

@@ -1,0 +1,10 @@
+#!/bin/bash
+. {{ db_oracle_profile }} > /dev/null 2>&1
+sqlplus / as sysdba <<EOF
+shutdown abort;
+startup nomount pfile='/home/oracle/workspace/pfile_init{{ db_instance }}.ora';
+create spfile from pfile='/home/oracle/workspace/pfile_init{{ db_instance }}.ora';
+shutdown abort;
+startup nomount;
+exit;
+EOF

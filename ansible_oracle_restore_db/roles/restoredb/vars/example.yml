@@ -1,0 +1,19 @@
+---
+# vars file for restoredb
+nbu_server: dc-nbumaster.msb.com.vn
+nbu_client: 10.1.67.34
+db_restore_controlFile: /ctrl_dBPMAPPRO_u7628f1vm_s5350_p1_t1149732854
+
+db_instance: bpmapproval
+db_oracle_home: /u01/app/oracle/product/19.17/dbhome_1
+db_oracle_profile: /home/oracle/bin/{{ db_instance }}
+db_create_file_dest: DATA
+db_recovery_file_dest: FRA
+db_grid_profile: /home/oracle/bin/grid
+db_grid_user: oracle
+db_grid_home: /u01/app/19.17/grid
+
+restore_standby_controlfile: no
+
+# Define specific variables:
+specific_pfile_path: /tmp/bpmapproval.pfile

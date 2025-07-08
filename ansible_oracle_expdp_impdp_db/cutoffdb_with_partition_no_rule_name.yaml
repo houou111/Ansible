@@ -1,0 +1,105 @@
+- name: Get Variables File from Exported Database
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  tasks:
+    - name: Run command to display date time format current
+      shell: "{{ date_time_format_current | default('date +%Y%m') }}"
+      register: date_time_format_current_output
+
+    - debug: var=date_time_format_current_output.stdout
+
+    - set_fact:
+        variables_file_name: "vars_{{ partition_naming }}_{{ date_time_format_current_output.stdout }}.txt"
+
+    - debug: var=variables_file_name
+
+    - name: Run command to display date time format cutoff
+      shell: "{{ date_time_format_cutoff }}"
+      register: date_time_format_cutoff_output
+
+    - debug: var=date_time_format_cutoff_output.stdout
+
+    - set_fact:
+        cutoff_time: "{{ date_time_format_cutoff_output.stdout }}"
+
+    - debug: var=cutoff_time
+  tags:
+    - get_variables_file
+
+- name: Set facts for all hosts in cutoffdb group
+  hosts: cutoffdb
+  gather_facts: False
+  tasks:
+    - set_fact:
+        variables_file_name: "{{ hostvars['localhost'].variables_file_name }}"
+  tags:
+    - get_variables_file
+
+- name: Copy Variables File from Exported Database to Ansible
+  hosts: exportdb
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: Copy Variables File from Exported Database to Ansible
+      synchronize:
+        src: "/autocutoff/variables_files/{{ variables_file_name }}"
+        dest: /tmp/
+        mode: pull
+  tags:
+    - get_variables_file
+
+- name: Launch the Job Template from Tower / Controller Host
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  collections:
+    - awx.awx
+  tasks:
+    - name: Check Extra Vars File existing
+      stat:
+        path: "/tmp/{{ variables_file_name }}"
+      register: extra_vars_path_result
+
+    - fail: msg="Extra Vars File NOT existing"
+      when: "not extra_vars_path_result.stat.exists"
+
+    - name: Include Vars
+      include_vars:
+        file: "/tmp/{{ variables_file_name }}"
+        name: extra_vars
+
+    - name: Remove Vars file 
+      file:
+        path: "/tmp/{{ variables_file_name }}"
+        state: absent
+      become: yes
+      connection: ssh
+      when:   
+        - is_ansible_automation_platform is undefined or is_ansible_automation_platform|bool != true
+
+    - name: Run Ansible Job Template
+      block:
+        - name: Add Extra Vars for Template
+          job_template:
+            name: "{{ template_name }}"
+            extra_vars: "{{ extra_vars }}"
+            tower_host: "{{ tower_host | default('localhost') }}"
+
+        - name: Launch the Job Template
+          job_launch:
+            job_template: "{{ template_name }}"
+            tower_host: "{{ tower_host | default('localhost') }}"
+          register: job_result
+
+        - name: Wait for Job to Complete
+          job_wait:
+            job_id: "{{ job_result.id }}"
+            tower_host: "{{ tower_host | default('localhost') }}"
+            timeout: 172800
+      always:
+        - name: Remove Extra Vars for Template
+          job_template:
+            name: "{{ template_name }}"
+            extra_vars: {}
+            tower_host: "{{ tower_host | default('localhost') }}"

@@ -1,0 +1,7 @@
+---
+---
+# Import all playbooks for each chức năng
+import_playbook: playbooks/p0.setup_user.yml
+import_playbook: playbooks/p1.etcd.yml
+import_playbook: playbooks/p2.postgresql.yml
+import_playbook: playbooks/p3.patroni.yml

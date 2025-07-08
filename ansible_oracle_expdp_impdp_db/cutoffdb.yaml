@@ -1,0 +1,151 @@
+- name: Get date time format
+  hosts: localhost
+  gather_facts: False
+  connection: local
+  tasks:
+    - name: Run command to display date time format
+      shell: "{{ date_time_format_command }}"
+      register: date_time_format
+      when:
+        - date_time_format_command is defined
+
+    - set_fact:
+        cutoff_time: "{{ date_time_format.stdout }}"
+      when:
+        - date_time_format_command is defined
+
+    - debug: var=cutoff_time
+      when:
+        - date_time_format_command is defined
+
+    - name: Run command to display date time format 02
+      shell: "{{ date_time_format_02_command }}"
+      register: date_time_format_02
+      when:
+        - date_time_format_02_command is defined
+
+    - set_fact:
+        cutoff_time_02: "{{ date_time_format_02.stdout }}"
+      when:
+        - date_time_format_02_command is defined
+
+    - debug: var=cutoff_time_02
+      when:
+        - date_time_format_02_command is defined
+  tags:
+    - get_date_time_format
+
+- name: Set facts for all hosts in cutoffdb group
+  hosts: cutoffdb
+  gather_facts: False
+  tasks:
+    - set_fact:
+        cutoff_time: "{{ hostvars['localhost'].cutoff_time }}"
+      when:
+        - date_time_format_command is defined
+
+    - set_fact:
+        cutoff_time_02: "{{ hostvars['localhost'].cutoff_time_02 }}"
+      when:
+        - date_time_format_02_command is defined
+
+- name: Pre-check export Database
+  import_playbook: playbook/pre_check_exportdb.yml
+  tags:
+    - pre_check
+
+- name: Pre-check import Database
+  import_playbook: playbook/pre_check_importdb.yml
+  when:
+    - import_db is defined
+    - import_db|bool == true
+  tags:
+    - pre_check
+
+- name: Export Database
+  hosts: exportdb
+  gather_facts: False
+  become: yes
+  roles:
+    - role: roles/exportdb
+  tags: export_database
+
+- name: Copy export file to Ansible
+  hosts: exportdb
+  gather_facts: False
+  become: yes
+  tasks:
+    - name: Ensure that permission for dump file
+      file:
+        path: "{{ dumpfile_path }}"
+        mode: 0644
+
+    - name: Copy export file to Ansible
+      synchronize:
+        src: "{{ dumpfile_path }}"
+        dest: /app/temp/
+        mode: pull
+      when:
+        - import_db is defined
+        - import_db|bool == true
+  tags:
+    - copy_export_file
+
+- name: Copy export file to import database
+  hosts: importdb
+  gather_facts: False
+  become: yes
+  tasks:
+    - name: Copy export file to import database
+      copy:
+        src: "/app/temp/{{ dumpfile_name }}.dmp"
+        dest: "{{ hist_dumpfile_directory }}"
+        mode: 0644
+        owner: oracle
+        group: oinstall
+      when:
+        - import_db is defined
+        - import_db|bool == true
+  tags:
+    - copy_export_file
+
+- name: Remove dump file in export database when copy fininh
+  gather_facts: False
+  hosts: exportdb
+  become: yes
+  tasks:
+    - name: Remove dump file in export database when copy fininh
+      file:
+        path: "{{ dumpfile_path }}"
+        state: absent
+      when:
+        - import_db is defined
+        - import_db|bool == true
+  tags:
+    - copy_export_file
+
+- name: Remove file import database in Ansible
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: Remove file import database in Ansible when copy fininh
+      file:
+        path: "/app/temp/{{ dumpfile_name }}.dmp"
+        state: absent
+      when:
+        - import_db is defined
+        - import_db|bool == true     
+  tags:
+    - copy_export_file
+
+- name: Import Database
+  hosts: importdb
+  gather_facts: False
+  become: yes
+  roles:
+    - role: roles/importdb 
+      when: 
+        - import_db is defined
+        - import_db|bool == true
+  tags: import_database

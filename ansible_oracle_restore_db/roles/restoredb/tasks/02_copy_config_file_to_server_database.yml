@@ -1,0 +1,94 @@
+- name: Create Workspace directory
+  file:
+   path: /home/oracle/workspace
+   state: directory
+   mode: 0755
+   owner: oracle
+   group: oinstall
+  tags:
+    - copy_config_file_to_server_database
+
+- name: Copy default pfile to Server Database
+  template:
+    src: templates/db_pfile.j2
+    dest: /home/oracle/workspace/pfile_init{{ db_instance }}.ora
+    owner: oracle
+    group: oinstall
+    mode: 0644
+  when: specific_pfile_path is undefined
+  tags:
+    - copy_config_file_to_server_database
+
+- name: Copy specific pfile to Server Database
+  copy:
+    src: "{{ specific_pfile_path }}"
+    dest: /home/oracle/workspace/pfile_init{{ db_instance }}.ora
+    owner: oracle
+    group: oinstall
+    mode: 0644
+    remote_src: true
+  when: specific_pfile_path is defined
+  tags:
+    - copy_config_file_to_server_database
+
+- name: Create adump directory in Server Database
+  file:
+    path: "/u01/app/oracle/admin/{{ db_instance }}/adump"
+    state: directory
+    mode: 0755
+    owner: oracle
+    group: oinstall
+  tags:
+    - copy_config_file_to_server_database
+
+- name: Copy Script to Startup nomount to Server Database
+  template:
+    src: templates/startup_nomount.sh.j2
+    dest: /home/oracle/workspace/startup_nomount.sh
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  tags:
+    - copy_config_file_to_server_database
+
+- name: Copy Script to Restore ControlFile to Server Database
+  template:
+    src: templates/restore_controlfile.sh.j2
+    dest: /home/oracle/workspace/restore_controlfile.sh
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  when: restore_standby_controlfile|bool == false
+  tags:
+    - copy_config_file_to_server_database
+
+- name: Copy Script to Restore ControlFile Stanby to Server Database
+  template:
+    src: templates/restore_controlfile_standby.sh.j2
+    dest: /home/oracle/workspace/restore_controlfile.sh
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  when: restore_standby_controlfile|bool == true
+  tags:
+    - copy_config_file_to_server_database
+
+- name: Copy Script to Restore Database to Server Database
+  template:
+    src: templates/restore_database.sh.j2
+    dest: /home/oracle/workspace/restore_database.sh
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  tags:
+    - copy_config_file_to_server_database
+
+- name: Copy Script to Open Database to Server Database
+  template:
+    src: templates/open_database.sh.j2
+    dest: /home/oracle/workspace/open_database.sh
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  tags:
+    - copy_config_file_to_server_database

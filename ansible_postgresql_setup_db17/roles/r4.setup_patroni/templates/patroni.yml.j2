@@ -1,0 +1,44 @@
+scope: {{ patroni_scope }}
+namespace: /service/
+name: {{ patroni_name }}
+
+restapi:
+  listen: {{ patroni_restapi.listen }}
+  connect_address: {{ patroni_restapi.connect_address }}
+
+etcd:
+  hosts: {{ patroni_etcd.hosts | to_json }}
+
+bootstrap:
+  dcs:
+    ttl: {{ patroni_bootstrap.dcs.ttl }}
+    loop_wait: {{ patroni_bootstrap.dcs.loop_wait }}
+    retry_timeout: {{ patroni_bootstrap.dcs.retry_timeout }}
+    maximum_lag_on_failover: {{ patroni_bootstrap.dcs.maximum_lag_on_failover }}
+    postgresql:
+      use_pg_rewind: {{ patroni_bootstrap.dcs.postgresql.use_pg_rewind }}
+      parameters:
+{% for key, value in patroni_bootstrap.dcs.postgresql.parameters.items() %}
+        {{ key }}: {{ value }}
+{% endfor %}
+
+postgresql:
+  listen: 0.0.0.0:5432
+  connect_address: {{ ansible_default_ipv4.address }}:5432
+  data_dir: {{ postgresql_data_dir }}
+  bin_dir: /usr/pgsql-{{ postgresql_version }}/bin
+  pgpass: /tmp/pgpass
+  authentication:
+    replication:
+      username: replicator
+      password: {{ postgresql_replicator_password }}
+    superuser:
+      username: postgres
+      password: {{ postgresql_superuser_password }}
+  parameters:
+    unix_socket_directories: '.'
+
+tags:
+    nofailover: false
+    noloadbalance: false
+ 

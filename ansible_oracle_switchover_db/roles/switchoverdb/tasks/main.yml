@@ -1,0 +1,5 @@
+---
+# tasks file for switchoverdb
+- import_tasks: 01_pre_check.yml
+- import_tasks: 02_switchover_to_standby.yml
+- import_tasks: 03_cleanup_workspace.yml

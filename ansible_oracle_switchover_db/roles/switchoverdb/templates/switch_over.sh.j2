@@ -1,0 +1,6 @@
+#!/bin/bash
+. {{ primary_db_profile }}
+sqlplus / as sysdba <<EOF
+alter database switchover to {{ standby_db_unique_name }};
+exit;
+EOF

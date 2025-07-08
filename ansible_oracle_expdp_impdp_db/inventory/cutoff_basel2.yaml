@@ -1,0 +1,10 @@
+localhost
+
+[cutoffdb:children]
+exportdb
+importdb
+
+[exportdb]
+10.0.189.95
+[importdb]
+10.0.67.65

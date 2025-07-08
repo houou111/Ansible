@@ -1,0 +1,111 @@
+- name: Pre-check export Database
+  hosts: exportdb
+  gather_facts: False
+  become: yes
+  tasks:
+    - set_fact:
+        export_workspace: "workspace_{{ dumpfile_name }}"
+
+    - name: Create Workspace directory
+      file:
+        path: "/home/oracle/{{ export_workspace }}"
+        state: directory
+        mode: 0755
+        owner: oracle
+        group: oinstall
+
+    - fail: msg=" Failed type of container_db variable "
+      when:
+        - container_db is defined
+        - container_db|type_debug != 'bool'
+      tags:
+        - server_pre_check
+
+    - name: Copy Script verify partition for Non-Container Database
+      template:
+        src: ../roles/exportdb/templates/verify_partition_non_container_db.sh.j2
+        dest: "/home/oracle/{{ export_workspace }}/verify_partition_{{ item }}.sh"
+        owner: oracle
+        group: oinstall
+        mode: 0755
+      with_items: "{{ partition_name }}"
+      when: 
+        - container_db is undefined or container_db|bool != true
+
+    - name: Copy Script verify partition for Container Database
+      template:
+        src: ../roles/exportdb/templates/verify_partition_container_db.sh.j2
+        dest: "/home/oracle/{{ export_workspace }}/verify_partition_{{ item }}.sh"
+        owner: oracle
+        group: oinstall
+        mode: 0755
+      with_items: "{{ partition_name }}"
+      when: 
+        - container_db is defined
+        - container_db|bool == true
+
+    - name: Run Script verify partition
+      shell: "su - oracle -c '/home/oracle/{{ export_workspace }}/verify_partition_{{ item }}.sh'"
+      register: verify_partition
+      with_items: "{{ partition_name }}"
+
+    #- name: verify partition
+    #  assert:
+    #    that:
+    #      - "'no rows selected' not in {{ item.stdout_lines }}"
+    #    success_msg: "PASSED - Partition '{{ item.item }}' is vailable"
+    #    fail_msg: "FAILED - Partition '{{ item.item }}' is not vailable"
+    #  loop: "{{ verify_partition.results }}"
+    # tags:
+    #   - pre_check
+    
+    - fail: msg="Partition "{{ item.item }}" is not vailable"
+      when: "'no rows selected' in item.stdout_lines"
+      loop: "{{ verify_partition.results }}"
+
+
+    - name: Copy Script verify directory for Non-Container Database
+      template:
+        src: ../roles/exportdb/templates/verify_directory_existing_non_container_db.sh.j2
+        dest: "/home/oracle/{{ export_workspace }}/verify_directory_existing.sh"
+        owner: oracle
+        group: oinstall
+        mode: 0755
+      when: 
+        - container_db is undefined or container_db|bool != true
+
+    - name: Copy Script verify directory for Container Database
+      template:
+        src: ../roles/exportdb/templates/verify_directory_existing_container_db.sh.j2
+        dest: "/home/oracle/{{ export_workspace }}/verify_directory_existing.sh"
+        owner: oracle
+        group: oinstall
+        mode: 0755
+      when: 
+        - container_db is defined
+        - container_db|bool == true
+
+    - name: Run Script verify directory
+      shell: "su - oracle -c '/home/oracle/{{ export_workspace }}/verify_directory_existing.sh'"
+      register: verify_directory_existing
+
+    - fail: msg="Directory is not vailable"
+      when: "'no rows selected' in verify_directory_existing.stdout_lines"
+
+    - set_fact:
+        dumpfile_directory: "{{ verify_directory_existing.stdout |regex_search('DIRECTORY_PATH\\n-.*-\\n([^\\n]+)','\\1') | first }}/"
+
+    - debug: var=dumpfile_directory
+
+    - set_fact:
+        dumpfile_path: "{{ verify_directory_existing.stdout |regex_search('DIRECTORY_PATH\\n-.*-\\n([^\\n]+)','\\1') | first }}/{{ dumpfile_name }}.dmp"
+
+    - debug: var=dumpfile_path
+
+    - name: Check Dump File existing
+      stat:
+        path: "{{ dumpfile_path }}"
+      register: dumpfile_path_result
+    
+    - fail: msg="Dump File existing"
+      when: "dumpfile_path_result.stat.exists"

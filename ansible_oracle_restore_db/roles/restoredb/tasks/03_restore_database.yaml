@@ -1,0 +1,64 @@
+- name: Run script to Startup Nomount
+  shell: su - oracle -c '/home/oracle/workspace/startup_nomount.sh'
+  args:
+    chdir: /home/oracle/workspace
+  tags:
+    - restore_database
+
+- name: Run script to Restore ControlFile
+  shell: su - oracle -c '/home/oracle/workspace/restore_controlfile.sh'
+  args:
+    chdir: /home/oracle/workspace
+  register: restore_controlfile
+  tags:
+    - restore_database
+
+- debug: var=restore_controlfile.stdout_lines
+  tags:
+    - restore_database
+
+- name: Run script to Restore Database
+  shell: su - oracle -c '/home/oracle/workspace/restore_database.sh | tee -a /tmp/restore_db_{{ db_instance }}-`date "+%Y-%m-%d_%H:%M:%S"`.log'
+  args:
+    chdir: /home/oracle/workspace
+  ignore_errors: true
+  register: restore_db
+  tags:
+    - restore_database
+
+- fail: msg="{{ restore_db.stdout_lines }}"
+  when: 
+    - restore_db.failed == true
+    - "'RMAN-06054' not in restore_db.stdout"
+  tags:
+    - restore_database
+
+- debug: var=restore_db.stdout_lines
+  tags:
+    - restore_database
+
+- debug: var=restore_db.stderr_lines
+  tags:
+    - restore_database
+
+- name: Run script to Open Database
+  shell: su - oracle -c '/home/oracle/workspace/open_database.sh'
+  args:
+    chdir: /home/oracle/workspace
+  ignore_errors: true
+  register: open_db
+  when: restore_standby_controlfile|bool == false
+  tags:
+    - restore_database
+
+- fail: msg="{{ open_db.stdout }}"
+  when: 
+    - "'ERROR' in open_db.stdout"
+    - restore_standby_controlfile|bool == false
+  tags:
+    - restore_database
+
+- debug: var=open_db.stdout_lines
+  tags:
+    - restore_database
+  when: restore_standby_controlfile|bool == false

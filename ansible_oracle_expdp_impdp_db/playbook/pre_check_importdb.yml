@@ -1,0 +1,41 @@
+- name: Pre-check import Database
+  hosts: importdb
+  gather_facts: False
+  become: yes
+  tasks:
+    - set_fact:
+        import_workspace: "workspace_{{ dumpfile_name }}"
+
+    - name: Create Workspace directory
+      file:
+        path: "/home/oracle/{{ import_workspace }}"
+        state: directory
+        mode: 0755
+        owner: oracle
+        group: oinstall
+ 
+    - name: Copy Script verify directory
+      template:
+        src: ../roles/importdb/templates/verify_directory_existing.sh.j2
+        dest: "/home/oracle/{{ import_workspace }}/verify_directory_existing.sh"
+        owner: oracle
+        group: oinstall
+        mode: 0755
+ 
+    - name: Run Script verify directory
+      shell: "su - oracle -c '/home/oracle/{{ import_workspace }}/verify_directory_existing.sh'"
+      register: verify_directory_existing
+
+    - fail: msg="Directory is not vailable"
+      when: "'no rows selected' in verify_directory_existing.stdout_lines"
+
+    - set_fact:
+        hist_dumpfile_directory: "{{ verify_directory_existing.stdout |regex_search('DIRECTORY_PATH\\n-.*-\\n([^\\n]+)','\\1') | first }}/"
+
+    - debug: var=hist_dumpfile_directory
+
+    - set_fact:
+        hist_dumpfile_path: "{{ verify_directory_existing.stdout |regex_search('DIRECTORY_PATH\\n-.*-\\n([^\\n]+)','\\1') | first }}/{{ dumpfile_name }}.dmp"
+
+    - debug: var=hist_dumpfile_path
+

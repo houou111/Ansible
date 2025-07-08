@@ -1,0 +1,6 @@
+- name: Cleanup Workspace directory
+  file:
+    path: "/home/oracle/{{ export_workspace }}"
+    state: absent
+  tags:
+    - cleanup_workspace

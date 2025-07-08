@@ -1,0 +1,6 @@
+#!/bin/bash
+. {{ db_oracle_profile }} > /dev/null 2>&1
+sqlplus / as sysdba <<EOF
+alter database open resetlogs;
+exit;
+EOF

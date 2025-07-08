@@ -1,0 +1,3 @@
+#!/bin/bash
+. {{ oracle_profile }} > /dev/null 2>&1
+expdp {{ container_db_user }}/{{ container_db_password }}@{{ container_db_tns_name }} directory={{ directory_name }} dumpfile={{ dumpfile_name }}.dmp logfile={{ dumpfile_name }}_expdp.log tables={{ partition_name | join(',') }} cluster=n compression=all exclude=statistics

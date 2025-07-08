@@ -1,0 +1,6 @@
+---
+# tasks file for restoredb
+- import_tasks: 01_pre_check.yml
+- import_tasks: 02_copy_config_file_to_server_database.yml
+- import_tasks: 03_restore_database.yaml 
+- import_tasks: 04_cleanup_workspace.yml 

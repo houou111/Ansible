@@ -1,0 +1,9 @@
+oracle_profile: /home/oracle/bin/efs
+dumpfile_name: AGG_MONTHLY_ACCOUNT_P202309_to_P202310
+partition_name:
+  - DW_EFSMSB.AGG_MONTHLY_ACCOUNT:P202309
+  - DW_EFSMSB.AGG_MONTHLY_ACCOUNT:P202310
+directory_name: DUMPDIR
+hist_oracle_profile: /home/oracle/bin/efshis
+hist_directory_name: DUMPDIR
+import_db: yes

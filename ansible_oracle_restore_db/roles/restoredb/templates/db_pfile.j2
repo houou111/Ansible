@@ -1,0 +1,6 @@
+*.control_files='+{{ db_create_file_dest }}/{{ db_instance | upper }}/CONTROLFILE/controlfile1.ctl','+{{ db_recovery_file_dest }}/{{ db_instance | upper }}/CONTROLFILE/controlfile2.ctl'
+*.db_name='{{ db_instance }}'
+*.db_unique_name='{{ db_instance }}'
+*.db_create_file_dest='+{{ db_create_file_dest }}'
+*.db_recovery_file_dest='+{{ db_recovery_file_dest }}'
+*.db_recovery_file_dest_size=50G

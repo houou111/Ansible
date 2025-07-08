@@ -1,0 +1,64 @@
+---
+# Display setup information and get user confirmation
+- name: R0.1 Display user setup information
+  ansible.builtin.debug:
+    msg: |
+      ===========================================
+      USER SETUP INFORMATION
+      ===========================================
+      Common user for all services:
+      - User: {{ postgresql_user }} ({{ postgresql_group }})
+      System Limits:
+      {% for limit in system_limits %}
+      - {{ limit.limit_item }}: {{ limit.value }}
+      {% endfor %}
+      ===========================================
+      Do you want to proceed with the setup?
+      Please enter '1' for yes or '0' for no.
+  run_once: true
+  delegate_to: "{{ groups['all'][0] }}"
+
+- name: R0.2 Get user confirmation
+  ansible.builtin.pause:
+    prompt: "Enter 1 to continue or 0 to abort"
+    echo: yes
+  register: user_confirmation
+  run_once: true
+  delegate_to: "{{ groups['all'][0] }}"
+
+- name: R0.3 Set fact for user confirmation
+  ansible.builtin.set_fact:
+    confirmed: "{{ user_confirmation.user_input == '1' }}"
+  run_once: true
+  delegate_to: "{{ groups['all'][0] }}"
+
+- name: R0.4 Abort if user did not confirm
+  ansible.builtin.fail:
+    msg: "Setup aborted by user"
+  when: not confirmed
+  run_once: true
+  delegate_to: "{{ groups['all'][0] }}"
+
+# Create common user and group for all services
+- name: R0.5 Create common group
+  ansible.builtin.group:
+    name: "{{ postgresql_group }}"
+    state: present
+
+- name: R0.6 Create common user
+  ansible.builtin.user:
+    name: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    shell: /bin/bash
+    create_home: yes
+    home: "/home/{{ postgresql_user }}"
+    state: present
+
+# Configure system limits
+- name: R0.7 Configure system limits
+  ansible.builtin.pam_limits:
+    domain: '*'
+    limit_type: "{{ item.limit_type }}"
+    limit_item: "{{ item.limit_item }}"
+    value: "{{ item.value }}"
+  loop: "{{ system_limits }}" 

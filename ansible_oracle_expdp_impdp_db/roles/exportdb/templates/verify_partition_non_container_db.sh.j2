@@ -1,0 +1,6 @@
+#!/bin/bash
+. {{ oracle_profile }} > /dev/null 2>&1
+sqlplus / as sysdba <<EOF
+select table_owner||'.'||table_name||':'||partition_name from dba_tab_partitions where 1=1 and table_owner||'.'||table_name||':'||partition_name ='{{ item }}';
+exit;
+EOF

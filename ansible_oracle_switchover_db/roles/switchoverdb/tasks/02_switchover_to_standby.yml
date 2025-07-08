@@ -1,0 +1,161 @@
+- name: Copy Script Shutdown Instance Database Node02 for RAC
+  template:
+    src: templates/shutdown_db_node02_rac_dc_to_dr.sh.j2
+    dest: /home/oracle/workspace/shutdown_db_node02_rac_dc_to_dr.sh
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  when: 
+    - groups['db_primary'][1] is defined
+    - inventory_hostname == groups['db_primary'][1]
+  tags:
+    - switchover_to_standby
+
+- name: Run script to Shutdown Instance Database Node02 for RAC
+  shell: su - oracle -c '/home/oracle/workspace/shutdown_db_node02_rac_dc_to_dr.sh'
+  register: shutdown_db_node02_rac
+  when: 
+    - groups['db_primary'][1] is defined
+    - inventory_hostname == groups['db_primary'][1]
+  tags:
+    - switchover_to_standby
+
+- debug: var=shutdown_db_node02_rac.stdout_lines
+  when: 
+    - groups['db_primary'][1] is defined
+    - inventory_hostname == groups['db_primary'][1]
+  tags:
+    - switchover_to_standby
+
+- name: Copy Script verify Database Node02 for RAC is idle (shutdown) status when Switchover DC to DR
+  template:
+    src: templates/verify_db_node02_shutdown_dc_to_dr.sh.j2
+    dest: /home/oracle/workspace/verify_db_node02_shutdown_dc_to_dr.sh
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  when: 
+    - groups['db_primary'][1] is defined
+    - inventory_hostname == groups['db_primary'][1]
+  tags:
+    - switchover_to_standby
+
+- name: Run script to verify Database Node02 for RAC is idle (shutdown) status when Switchover DC to DR
+  shell: su - oracle -c '/home/oracle/workspace/verify_db_node02_shutdown_dc_to_dr.sh'
+  register: verify_db_node02_shutdown_dc_to_dr
+  when: 
+    - groups['db_primary'][1] is defined
+    - inventory_hostname == groups['db_primary'][1]
+  tags:
+    - switchover_to_standby
+
+- name: Verify Database Node02 for RAC is idle (shutdown) when Switchover DC to DR
+  assert:
+    that:
+      - '"Connected to an idle instance" in verify_db_node02_shutdown_dc_to_dr.stdout'
+    success_msg: "PASSED - Database Node02 for RAC is idle (shutdown) status"
+    fail_msg: "FAILED - Database Node02 for RAC is NOT idle (shutdown) status"
+  when: 
+    - groups['db_primary'][1] is defined
+    - inventory_hostname == groups['db_primary'][1]
+  tags:
+    - switchover_to_standby
+
+- name: Copy Script switchover to standby
+  template:
+    src: templates/switch_over.sh.j2
+    dest: /home/oracle/workspace/switch_over.sh
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  when: inventory_hostname == groups['db_primary'][0]
+  tags:
+    - switchover_to_standby
+
+- name: Run script to switchover to standby
+  shell: su - oracle -c '/home/oracle/workspace/switch_over.sh'
+  register: switchover
+  when: inventory_hostname == groups['db_primary'][0]
+  tags:
+    - switchover_to_standby
+
+- debug: var=switchover.stdout_lines
+  when: inventory_hostname == groups['db_primary'][0]
+  tags:
+    - switchover_to_standby
+
+- name: Copy Script Open Database Standby
+  template:
+    src: templates/open_database.sh.j2
+    dest: /home/oracle/workspace/open_database.sh
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  when: inventory_hostname == groups['db_standby'][0]
+  tags:
+    - switchover_to_standby
+
+- name: Run script to Open Database Standby
+  shell: su - oracle -c '/home/oracle/workspace/open_database.sh'
+  register: open_database
+  when: inventory_hostname == groups['db_standby'][0]
+  tags:
+    - switchover_to_standby
+
+- name: Copy Script Startup Instance Database Node02 for RAC
+  template:
+    src: templates/startup_db_node02_rac_dr_to_dc.sh.j2
+    dest: /home/oracle/workspace/startup_db_node02_rac_dr_to_dc.sh
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  when: 
+    - groups['db_standby'][1] is defined
+    - inventory_hostname == groups['db_standby'][1]
+  tags:
+    - switchover_to_standby
+
+- name: Run script to Startup Instance Database Node02 for RAC
+  shell: su - oracle -c '/home/oracle/workspace/startup_db_node02_rac_dr_to_dc.sh'
+  register: startup_db_node02_rac
+  when: 
+    - groups['db_standby'][1] is defined
+    - inventory_hostname == groups['db_standby'][1]
+  tags:
+    - switchover_to_standby
+
+- debug: var=startup_db_node02_rac.stdout_lines
+  when: 
+    - groups['db_standby'][1] is defined
+    - inventory_hostname == groups['db_standby'][1]
+  tags:
+    - switchover_to_standby
+
+- name: Copy Script verify database standby switch to primary
+  template:
+    src: templates/verify_database_standby_switch_to_primary.sh.j2
+    dest: /home/oracle/workspace/verify_database_standby_switch_to_primary.sh
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  when: inventory_hostname == groups['db_standby'][0]
+  tags:
+    - switchover_to_standby
+
+- name: Run script to verify database standby switch to primary
+  shell: su - oracle -c '/home/oracle/workspace/verify_database_standby_switch_to_primary.sh'
+  register: verify_database_standby_switch_to_primary
+  when: inventory_hostname == groups['db_standby'][0]
+  tags:
+    - switchover_to_standby
+
+- name: Verify database standby switch to primary
+  assert:
+    that: 
+      - '"READ WRITE" in verify_database_standby_switch_to_primary.stdout'
+      - '"PRIMARY" in verify_database_standby_switch_to_primary.stdout'
+    success_msg: "PASSED - Standby Database has been switched to primary successfully"
+    fail_msg: "FAILED - Has problem when switched to primary"
+  when: inventory_hostname == groups['db_standby'][0]
+  tags:
+    - switchover_to_standby

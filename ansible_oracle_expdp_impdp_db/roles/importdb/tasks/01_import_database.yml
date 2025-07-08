@@ -1,0 +1,39 @@
+- name: Copy Script import Database
+  template:
+    src: templates/import_db.sh.j2
+    dest: "/home/oracle/{{ import_workspace }}/import_db.sh"
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  tags:
+    - import_database
+
+- name: Ensure that user orace has permission with dump directory
+  file:
+    path: "{{ hist_dumpfile_directory }}"
+    owner: oracle
+    group: oinstall
+
+- name: Run script to import Database
+  shell: "su - oracle -c '/home/oracle/{{ import_workspace }}/import_db.sh'"
+  ignore_errors: true
+  register: import_database
+  async: 172800
+  poll: 50
+  tags:
+    - import_database
+
+- debug: var=import_database.{{ item }}
+  with_items:
+    - stdout_lines
+    - stderr_lines
+  tags:
+    - import_database
+
+- fail: msg="{{ import_database.stderr_lines }}"
+  when:
+    - import_database.failed == true
+    - "'ORA-39083' not in import_database.stderr"
+    - "'ORA-01917' not in import_database.stderr"
+  tags:
+    - import_database

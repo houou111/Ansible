@@ -1,0 +1,56 @@
+---
+# Add PGDG repository for ETCD
+- name: R1.1 Add PGDG repository for ETCD
+  ansible.builtin.yum_repository:
+    name: pgdg-rhel9-extras
+    description: PGDG Extras Repository
+    baseurl: https://ftp.postgresql.org/pub/repos/yum/common/pgdg-rhel9-extras/redhat/rhel-9-x86_64/
+    gpgcheck: yes
+    gpgkey: https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
+    enabled: yes
+  when: ansible_os_family == "RedHat"
+
+# Display installation information and get user confirmation
+- name: R1.2 Display ETCD installation information
+  ansible.builtin.debug:
+    msg: |
+      ===========================================
+      ETCD INSTALLATION INFORMATION
+      ===========================================
+      Data Directory: {{ etcd_data_dir }}
+      Config Directory: {{ etcd_config_dir }}
+      Cluster Name: {{ etcd_cluster_name }}
+      ===========================================
+      Do you want to proceed with the installation?
+
+# Create ETCD data directory
+- name: R1.3 Create ETCD data directory
+  ansible.builtin.file:
+    path: "{{ etcd_data_dir }}"
+    state: directory
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: '0700'
+
+# Install ETCD package
+- name: R1.4 Install ETCD package
+  ansible.builtin.command:
+    cmd: "sudo dnf --disablerepo=* --enablerepo=pgdg-rhel9-extras install -y etcd"
+  when: ansible_os_family == "RedHat"
+
+# Configure ETCD
+- name: R1.5 Configure ETCD
+  ansible.builtin.template:
+    src: etcd.conf.j2
+    dest: "{{ etcd_config_dir }}/etcd.conf"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: '0644'
+  notify: restart etcd
+
+# Start and enable ETCD service
+- name: R1.6 Start and enable ETCD service
+  ansible.builtin.service:
+    name: etcd
+    state: started
+    enabled: yes 

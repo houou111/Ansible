@@ -1,0 +1,6 @@
+---
+- name: Setup ETCD
+  hosts: etcd
+  become: yes
+  roles:
+    - { role: R1.etcd }

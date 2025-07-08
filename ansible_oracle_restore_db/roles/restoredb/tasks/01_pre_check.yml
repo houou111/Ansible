@@ -1,0 +1,107 @@
+---
+- name: Gather package facts
+  package_facts:
+    manager: auto
+  tags:
+    - server_pre_check
+
+- fail: msg=" Failed type of restore_standby_controlfile variable "
+  when: restore_standby_controlfile | type_debug != 'bool'
+  tags:
+    - server_pre_check
+
+- fail: msg=" Netbackup is not installed"
+  when: "'VRTSnbcfg' not in ansible_facts.packages"
+  tags:
+    - server_pre_check
+
+- name: show version of Netbackup
+  debug:
+    msg: "versions of Netbackup is {{ ansible_facts.packages.VRTSnbcfg[0].version }}"
+  tags:
+    - server_pre_check
+
+- name: Check Netbackup Path
+  stat:
+    path: /usr/openv/netbackup/bin/bplist
+  register: path_result
+  tags:
+    - server_pre_check
+
+- fail: msg=" Netbackup PATH is not found"
+  when: "not path_result.stat.exists"
+  tags:
+    - server_pre_check
+
+- name: Create Workspace directory
+  file:
+   path: /home/oracle/workspace
+   state: directory
+   mode: 0755
+   owner: oracle
+   group: oinstall
+  tags:
+    - server_pre_check
+
+- name: Copy verify instance Script to Destination Database
+  template:
+    src: templates/verify_instance.sh.j2
+    dest: /home/oracle/workspace/verify_instance.sh
+    mode: 0755
+    owner: oracle
+  tags:
+    - server_pre_check
+
+- name: Copy verify data ASM Script to Destination Database
+  template:
+    src: templates/verify_data_asm.sh.j2
+    dest: /home/oracle/workspace/verify_data_asm.sh
+    mode: 0755
+    owner: "{{ db_grid_user }}"
+  tags:
+    - server_pre_check
+
+- name: Run command to check instance
+  shell: /home/oracle/workspace/verify_instance.sh
+  register: verify_instance
+  tags:
+    - server_pre_check
+
+- name: Verify Oracle Instance
+  assert:
+    that: '"PASSED" in verify_instance.stdout'
+    success_msg: "PASSED - Oracle Instance NOT existing, available for restoring"
+    fail_msg: "FAILED - Oracle Instance existing, NOT available for restoring"
+  tags:
+    - server_pre_check
+
+- name: Run command to check data ASM
+  shell: "su - {{ db_grid_user }} -c '/home/oracle/workspace/verify_data_asm.sh'"
+  register: verify_data_asm
+  tags:
+    - server_pre_check
+
+- name: Verify Data ASM
+  assert:
+    that: '"PASSED" in verify_data_asm.stdout'
+    success_msg: "PASSED - data ASM NOT existing and available for restoring"
+    fail_msg: "FAILED - data ASM existing and NOT available for restoring"
+  tags:
+    - server_pre_check
+
+- name: Check connection to NetBackup Server
+  wait_for:
+    host: "{{ item[0] }}"
+    port: "{{ item[1] }}"
+    state: started
+    delay: 0
+    timeout: 3
+  with_nested:
+  - [ 10.0.19.251, 10.0.17.250, 10.0.19.250, 10.1.19.250, 10.1.19.94, 10.1.17.94, 10.1.68.94, 10.1.19.137 ]
+  - [ 1556, 13724, 13782 ]
+  tags:
+    - server_pre_check
+
+- debug: msg="All pre-check has been passed"
+  tags:
+    - server_pre_check

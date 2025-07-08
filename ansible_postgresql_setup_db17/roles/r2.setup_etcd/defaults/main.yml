@@ -1,0 +1,24 @@
+---
+# etcd version
+etcd_version: "3.5.0"
+
+# etcd configuration
+etcd_data_dir: "/var/lib/etcd"
+etcd_config_dir: "/etc/etcd"
+etcd_client_port: 2379
+etcd_peer_port: 2380
+etcd_initial_cluster_token: "etcd-cluster-token"
+etcd_initial_cluster_state: "new"
+
+# etcd service
+etcd_service_name: etcd
+etcd_service_state: started
+etcd_service_enabled: yes
+
+# etcd cluster configuration
+etcd_cluster_name: "etcd-cluster"
+etcd_initial_advertise_peer_urls: "http://{{ ansible_default_ipv4.address }}:2380"
+etcd_listen_peer_urls: "http://{{ ansible_default_ipv4.address }}:2380"
+etcd_listen_client_urls: "http://{{ ansible_default_ipv4.address }}:2379,http://127.0.0.1:2379"
+etcd_advertise_client_urls: "http://{{ ansible_default_ipv4.address }}:2379"
+etcd_initial_cluster: "{{ groups['etcd'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | map('regex_replace', '^(.*)$', '\\1=http://\\1:2380') | join(',') }}" 

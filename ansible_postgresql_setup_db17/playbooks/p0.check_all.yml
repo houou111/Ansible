@@ -1,0 +1,26 @@
+
+- name: P0 - Kiểm tra hệ thống và xác nhận người dùng
+  hosts: all
+  become: yes
+  roles:
+    - { role: r0.check_all }
+  tasks:
+    - name: Hỏi người dùng có muốn tiếp tục cài đặt không
+      ansible.builtin.pause:
+        prompt: "Nhập 1 để tiếp tục, 0 để dừng lại"
+        echo: yes
+      register: user_confirm
+      run_once: true
+      delegate_to: "{{ groups['all'][0] }}"
+
+    - name: Set fact xác nhận
+      ansible.builtin.set_fact:
+        confirmed: "{{ user_confirm.user_input == '1' }}"
+      run_once: true
+      delegate_to: "{{ groups['all'][0] }}"
+
+    - name: Dừng playbook nếu người dùng không xác nhận
+      ansible.builtin.meta: end_play
+      when: not confirmed
+      run_once: true
+      delegate_to: "{{ groups['all'][0] }}"

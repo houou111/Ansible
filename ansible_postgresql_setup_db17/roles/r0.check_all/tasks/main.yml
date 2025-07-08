@@ -1,0 +1,74 @@
+---
+# Check if users exist
+- name: Check if PostgreSQL user exists
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ postgresql_user }}"
+  register: postgresql_user_check
+  ignore_errors: true
+
+- name: Check if etcd user exists
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ etcd_user | default('etcd') }}"
+  register: etcd_user_check
+  ignore_errors: true
+
+- name: Check if patroni user exists
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ patroni_user | default('patroni') }}"
+  register: patroni_user_check
+  ignore_errors: true
+
+- name: Show user existence results
+  ansible.builtin.debug:
+    msg: |
+      PostgreSQL user exists: {{ postgresql_user_check.found | default(false) }}
+      etcd user exists: {{ etcd_user_check.found | default(false) }}
+      patroni user exists: {{ patroni_user_check.found | default(false) }}
+
+# Check if required packages are installed
+- name: Check if etcd package is installed
+  ansible.builtin.package_facts:
+  when: ansible_facts.os_family == 'RedHat' or ansible_facts.os_family == 'Debian'
+
+- name: Show etcd package status
+  ansible.builtin.debug:
+    msg: "etcd package installed: {{ 'etcd' in ansible_facts.packages }}"
+  when: ansible_facts.os_family == 'RedHat' or ansible_facts.os_family == 'Debian'
+
+- name: Check if patroni package is installed
+  ansible.builtin.debug:
+    msg: "patroni package installed: {{ 'patroni' in ansible_facts.packages }}"
+  when: ansible_facts.os_family == 'RedHat' or ansible_facts.os_family == 'Debian'
+
+- name: Check if postgresql package is installed
+  ansible.builtin.debug:
+    msg: "postgresql package installed: {{ 'postgresql' in ansible_facts.packages or 'postgresql-server' in ansible_facts.packages }}"
+  when: ansible_facts.os_family == 'RedHat' or ansible_facts.os_family == 'Debian'
+
+
+# Check for running processes
+- name: Check for running etcd process
+  ansible.builtin.shell: pgrep -fl etcd
+  register: etcd_proc
+  ignore_errors: true
+
+- name: Check for running patroni process
+  ansible.builtin.shell: pgrep -fl patroni
+  register: patroni_proc
+  ignore_errors: true
+
+- name: Check for running postgres process
+  ansible.builtin.shell: pgrep -fl postgres
+  register: postgres_proc
+  ignore_errors: true
+
+- name: Show process check results
+  ansible.builtin.debug:
+    msg: |
+      etcd process: {{ etcd_proc.stdout | default('Not running') }}
+      patroni process: {{ patroni_proc.stdout | default('Not running') }}
+      postgres process: {{ postgres_proc.stdout | default('Not running') }}
+

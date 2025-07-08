@@ -1,0 +1,6 @@
+---
+- name: Setup PostgreSQL
+  hosts: postgresql
+  become: yes
+  roles:
+    - { role: R2.postgresql }

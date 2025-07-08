@@ -1,0 +1,8 @@
+---
+- name: Switchover Oracle Database
+  hosts: all
+  gather_facts: true
+  become: yes
+
+  roles:
+    - roles/switchoverdb

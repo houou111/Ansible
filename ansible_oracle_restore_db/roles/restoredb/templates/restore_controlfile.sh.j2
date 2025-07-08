@@ -1,0 +1,10 @@
+#!/bin/bash
+. {{ db_oracle_profile }} > /dev/null 2>&1
+rman target / <<EOF
+run {
+  allocate channel c1 device type 'sbt_tape' parms 'SBT_LIBRARY=/usr/openv/netbackup/bin/libobk.so64';
+  send 'NB_ORA_SERV={{ nbu_server }}, NB_ORA_CLIENT={{ nbu_client }}';
+  restore controlfile from '{{ db_restore_controlFile }}';
+  release channel c1;
+}
+EOF

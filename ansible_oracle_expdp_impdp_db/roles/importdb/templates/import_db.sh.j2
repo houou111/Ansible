@@ -1,0 +1,3 @@
+#!/bin/bash
+. {{ hist_oracle_profile }} > /dev/null 2>&1
+impdp \"/ as sysdba\" directory={{ hist_directory_name }} dumpfile={{ dumpfile_name }}.dmp logfile={{ dumpfile_name }}_impdp.log content=data_only

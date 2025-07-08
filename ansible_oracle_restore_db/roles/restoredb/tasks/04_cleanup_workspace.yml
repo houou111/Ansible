@@ -1,0 +1,10 @@
+- name: Cleanup Workspace directory in Database Server
+  file:
+    path: /home/oracle/workspace
+    state: absent
+  tags:
+    - cleanup_workspace
+
+- debug: msg="Restore Database successfully"
+  tags:
+    - cleanup_workspace

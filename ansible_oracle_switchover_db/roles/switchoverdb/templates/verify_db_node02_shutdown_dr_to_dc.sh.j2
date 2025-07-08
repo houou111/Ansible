@@ -1,0 +1,5 @@
+#!/bin/bash
+. {{ standby_db_profile }}
+sqlplus / as sysdba <<EOF
+exit;
+EOF

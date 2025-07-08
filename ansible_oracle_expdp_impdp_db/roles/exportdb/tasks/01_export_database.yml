@@ -1,0 +1,45 @@
+- name: Copy Script export Non-Container Database
+  template:
+    src: templates/export_non_container_db.sh.j2
+    dest: "/home/oracle/{{ export_workspace }}/export_db.sh"
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  when: 
+    - container_db is undefined or container_db|bool != true
+
+- name: Copy Script export Container Database
+  template:
+    src: templates/export_container_db.sh.j2
+    dest: "/home/oracle/{{ export_workspace }}/export_db.sh"
+    owner: oracle
+    group: oinstall
+    mode: 0755
+  when: 
+    - container_db is defined
+    - container_db|bool == true
+
+- name: Ensure that user orace has permission with dump directory
+  file:
+    path: "{{ dumpfile_directory }}"
+    owner: oracle
+    group: oinstall
+
+- name: Run script to export Database
+  shell: "su - oracle -c '/home/oracle/{{ export_workspace }}/export_db.sh'"
+  async: 172800
+  poll: 50
+  register: export_database
+
+#- name: Wait for export task complete
+#  async_status:
+#    jid: "{{ export_database.ansible_job_id }}"
+#  register: jobs_result
+#  until: jobs_result.finished
+#  retries: 576
+#  delay: 50
+
+- debug: var=export_database.{{ item }}
+  with_items:
+    - stdout_lines
+    - stderr_lines
