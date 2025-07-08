@@ -3,4 +3,4 @@
   hosts: all
   become: yes
   roles:
-    - { role: R0.setup_user }
+    - { role: r0.setup_user }

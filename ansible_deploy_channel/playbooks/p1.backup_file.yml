@@ -1,7 +1,7 @@
 ---
-- name: up_service
+- name: p1.backup_file
   hosts: channel_app
   become: yes
   roles:
-    - up_service
+    - r1.backup_file
 

@@ -1,0 +1,7 @@
+---
+- name: p9.rollback_from_lastest_bk
+  hosts: channel_app
+  become: yes
+  roles:
+    - r9.rollback_from_lastest_bk
+

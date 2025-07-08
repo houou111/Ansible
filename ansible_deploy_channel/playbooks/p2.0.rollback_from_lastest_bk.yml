@@ -1,7 +1,0 @@
----
-- name: 2.0.rollback_from_lastest_bk
-  hosts: channel_app
-  become: yes
-  roles:
-    - rollback
-

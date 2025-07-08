@@ -3,4 +3,4 @@
   hosts: postgresql
   become: yes
   roles:
-    - { role: R3.patroni }
+    - { role: r3.patroni }

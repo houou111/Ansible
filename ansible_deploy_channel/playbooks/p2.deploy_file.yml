@@ -1,7 +1,6 @@
 ---
-- name: backup_file
+- name: p2.deploy_file
   hosts: channel_app
   become: yes
   roles:
-    - backup_file
-
+    - r2.deploy_file

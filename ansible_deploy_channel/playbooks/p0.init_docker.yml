@@ -1,7 +1,7 @@
 ---
-- name: init_docker
+- name: p0.init_docker
   hosts: channel_app
   become: yes
   roles:
-    - init_docker
+    - r0.init_docker
 

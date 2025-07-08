@@ -1,8 +1,8 @@
 #!/bin/bash
-APP_DIR=/var/www/jbsv-prod/application
-APP_DIR_BK=/var/www/jbsv-prod/application/bk
-CONFIG_DIR=/var/www/jbsv-prod/data/config
-CONFIG_DIR_BK=/var/www/jbsv-prod/data/config/bk
+APP_DIR={{remote_app_dir}}
+APP_DIR_BK={{remote_app_dir}}/bk
+CONFIG_DIR={{remote_config_dir}}
+CONFIG_DIR_BK={{remote_config_dir}}/bk
 TIMESTAMP=$(date +"%d%m%Y_%H%M%S")
 
 mkdir -p "$APP_DIR_BK/$TIMESTAMP"

@@ -1,6 +1,7 @@
 ---
-- name: deploy_file
+- name: p3.up_service
   hosts: channel_app
   become: yes
   roles:
-    - deploy_file
+    - r3.up_service
+

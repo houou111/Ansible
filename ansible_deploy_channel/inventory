@@ -1,3 +1,0 @@
-[channel_app]
-node1           ansible_host=10.148.0.21 node_id=1
-node2           ansible_host=10.148.0.20 node_id=2

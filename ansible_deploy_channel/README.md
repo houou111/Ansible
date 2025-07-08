@@ -6,43 +6,45 @@
 ansible_deploy_channel/
 ├── ansible.cfg
 ├── backup_local.sh
-├── inventory
-├── README.md
-├── bk/
-│   └── deploy_file_<timestamp>/
+├── inventories/
+│   ├── dev/hosts.ini
+│   └── prod/hosts.ini
 ├── group_vars/
-│   └── channel_app.yml
+│   └── all.yml
 ├── logs/
 ├── playbooks/
-│   ├── 0.init_docker.yml
-│   ├── 1.0.deploy_all.yml
-│   ├── 1.1.backup_file.yml
-│   ├── 1.2.deploy_file.yml
-│   ├── 1.3.up_service.yml
-│   └── 2.0.rollback_from_lastest_bk.yml
+│   ├── p0.init_docker.yml
+│   ├── p1.backup_file.yml
+│   ├── p2.deploy_file.yml
+│   ├── p3.up_service.yml
+│   └── p9.rollback_from_lastest_bk.yml
 ├── roles/
-│   ├── backup_file/
+│   ├── r0.init_docker/
+│   │   └── tasks/main.yml
+│   ├── r1.backup_file/
 │   │   ├── tasks/main.yml
-│   │   └── templates/backup_before_deploy.sh.j2
-│   ├── deploy_file/
+│   │   └── template/backup_before_deploy.sh.j2
+│   ├── r2.deploy_file/
 │   │   ├── bk/
 │   │   ├── tasks/main.yml
 │   │   └── templates/*.j2 (các file env, docker-compose, ...)
-│   ├── init_docker/
-│   │   └── tasks/main.yml
-│   ├── rollback/
+│   ├── r3.up_service/
 │   │   ├── tasks/main.yml
-│   │   └── templates/rollback_from_lastest_bk.sh.j2
-│   └── up_service/
+│   │   └── templates/up-all.sh.j2
+│   └── r9.rollback_from_lastest_bk/
 │       ├── tasks/main.yml
-│       └── templates/up-all.sh.j2
+│       └── templates/rollback_from_lastest_bk.sh.j2
+├── site.yml
+├── README.md
+├── bk/
+└── ...
 ```
 
 ## 2. Chuẩn bị môi trường
 
 - Chạy playbook khởi tạo Docker và user docker:
   ```bash
-  ansible-playbook -i inventory playbooks/0.init_docker.yml
+  ansible-playbook -i inventories/dev/hosts.ini playbooks/p0.init_docker.yml
   ```
 
 ## 3. Backup cấu hình local
@@ -54,40 +56,35 @@ ansible_deploy_channel/
 
 ## 4. Chỉnh sửa template cấu hình
 - Sửa các file `.j2` trong:
-  - `roles/deploy_file/templates/`
-  - `roles/backup_file/templates/`
-  - `roles/up_service/templates/`
+  - `roles/r2.deploy_file/templates/`
+  - `roles/r1.backup_file/template/`
+  - `roles/r3.up_service/templates/`
 
 ## 5. Triển khai ứng dụng
 
 - Chạy từng bước:
   ```bash
-  ansible-playbook -i inventory playbooks/1.1.backup_file.yml
-  ansible-playbook -i inventory playbooks/1.2.deploy_file.yml
-  ansible-playbook -i inventory playbooks/1.3.up_service.yml
+  ansible-playbook -i inventories/dev/hosts.ini playbooks/p1.backup_file.yml
+  ansible-playbook -i inventories/dev/hosts.ini playbooks/p2.deploy_file.yml
+  ansible-playbook -i inventories/dev/hosts.ini playbooks/p3.up_service.yml
   ```
-- Hoặc chạy tất cả:
+- Hoặc chạy tất cả qua site.yml:
   ```bash
-  ansible-playbook -i inventory playbooks/1.0.deploy_all.yml
+  ansible-playbook -i inventories/dev/hosts.ini site.yml
   ```
 
-## 6. Cấu hình biến
+## 6. Rollback (khôi phục từ backup gần nhất)
 
-- Biến dùng chung cho các node được khai báo trong:
-  - `group_vars/channel_app.yml`:
-    ```yaml
-    remote_app_dir: /var/www/jbsv-prod/application
-    remote_config_dir: /var/www/jbsv-prod/data/config
-    ```
-- Biến riêng cho từng node (ví dụ: `node_id`) khai báo trực tiếp trong file `inventory`:
-    ```ini
-    [channel_app]
-    node1 ansible_host=10.148.0.21 node_id=1
-    node2 ansible_host=10.148.0.20 node_id=2
-    ```
+- Chạy playbook rollback:
+  ```bash
+  ansible-playbook -i inventories/dev/hosts.ini playbooks/p9.rollback_from_lastest_bk.yml
+  ```
 
-## 7. Lưu ý
-- Các thư mục và file trên remote sẽ được tạo và gán quyền `docker:docker` tự động.
-- Toàn bộ thao tác copy, backup, up service đều thực hiện với user `docker`.
-- Đảm bảo các file template docker-compose cần thiết đều có trong thư mục templates.
-- Nếu thiếu file template nào, hãy bổ sung đúng tên và nội dung.
+## 7. Cấu hình biến
+- Biến chung: `group_vars/all.yml`
+- Biến riêng: file `inventories/dev/hosts.ini` hoặc `inventories/prod/hosts.ini`
+
+## 8. Lưu ý
+- Các thao tác đều thực hiện với user/group `docker:docker`.
+- Thư mục backup lưu tại `bk/`.
+- Nếu thiếu file template, hãy bổ sung đúng tên và nội dung.
