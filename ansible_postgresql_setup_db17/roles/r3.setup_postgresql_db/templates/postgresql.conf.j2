@@ -1,0 +1,39 @@
+# -----------------------------
+# PostgreSQL configuration file
+# -----------------------------
+data_directory = '{{ postgresql_data_dir }}'
+
+# Dynamic config from variables (if defined)
+{% if postgresql_conf is defined %}
+{% for key, value in postgresql_conf.items() %}
+{{ key }} = '{{ value }}'
+{% endfor %}
+{% endif %}
+
+# Memory Configuration
+effective_cache_size = {{ postgresql_effective_cache_size | default('4GB') }}
+maintenance_work_mem = {{ postgresql_maintenance_work_mem | default('256MB') }}
+work_mem = {{ postgresql_work_mem | default('16MB') }}
+
+# WAL Configuration
+wal_level = {{ postgresql_wal_level | default('replica') }}
+archive_mode = {{ postgresql_archive_mode | default('on') }}
+archive_command = '{{ postgresql_archive_command | default("test ! -f /var/lib/pgsql/" ~ postgresql_version ~ "/archive/%f && cp %p /var/lib/pgsql/" ~ postgresql_version ~ "/archive/%f") }}'
+
+# Replication Configuration
+max_wal_senders = {{ postgresql_max_wal_senders | default(10) }}
+max_replication_slots = {{ postgresql_max_replication_slots | default(10) }}
+
+# Logging Configuration
+log_destination = {{ postgresql_log_destination | default('stderr') | to_json }}
+logging_collector = {{ postgresql_logging_collector | default('on') }}
+log_directory = {{ postgresql_log_directory | default('pg_log') | to_json }}
+log_filename = {{ postgresql_log_filename | default('postgresql-%Y-%m-%d_%H%M%S.log') | to_json }}
+log_rotation_age = {{ postgresql_log_rotation_age | default('1d') }}
+log_rotation_size = {{ postgresql_log_rotation_size | default('100MB') }}
+log_min_duration_statement = {{ postgresql_log_min_duration_statement | default(1000) }}
+log_checkpoints = {{ postgresql_log_checkpoints | default('on') }}
+log_connections = {{ postgresql_log_connections | default('on') }}
+log_disconnections = {{ postgresql_log_disconnections | default('on') }}
+log_lock_waits = {{ postgresql_log_lock_waits | default('on') }}
+log_temp_files = {{ postgresql_log_temp_files | default(0) }}

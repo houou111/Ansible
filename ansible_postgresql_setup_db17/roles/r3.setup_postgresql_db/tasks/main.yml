@@ -1,0 +1,112 @@
+---
+# Kernel parameters
+- name: R3.1.1 Configure kernel parameters for PostgreSQL
+  ansible.builtin.blockinfile:
+    path: /etc/sysctl.conf
+    block: |
+      {% for k, v in postgresql_sysctl_params.items() %}
+      {{ k }} = {{ v }}
+      {% endfor %}
+    marker: "# {mark} ANSIBLE MANAGED KERNEL PARAMS"
+    create: yes
+    state: present
+  notify:
+    - reload sysctl
+
+# Apply kernel parameters
+- name: R3.1.2 Apply kernel parameters
+  ansible.builtin.command: sysctl -p
+  changed_when: false
+  become: yes
+
+# Resource limits
+- name: R3.2 Configure resource limits for postgres
+  ansible.builtin.blockinfile:
+    path: /etc/security/limits.conf
+    block: |
+      {% for l in postgresql_limits %}
+      {{ l }}
+      {% endfor %}
+    marker: "# {mark} ANSIBLE MANAGED POSTGRES LIMITS"
+    create: yes
+    state: present
+  become: yes
+
+- name: R3.3 Ensure pam_limits.so in /etc/pam.d/login
+  ansible.builtin.lineinfile:
+    path: /etc/pam.d/login
+    line: 'session    required     pam_limits.so'
+    state: present
+  become: yes
+
+# Add postgres ulimit block from group_vars
+- name: R3.4 Add postgres ulimit to /etc/profile
+  ansible.builtin.blockinfile:
+    path: /etc/profile
+    block: "{{ postgresql_ulimit_block }}"
+    marker: "# {mark} ANSIBLE MANAGED POSTGRES ULIMIT"
+    create: yes
+    state: present
+  become: yes
+
+# Disable the built-in PostgreSQL module (only if it exists)
+- name: R3.5 Disable built-in PostgreSQL module
+  ansible.builtin.command:
+    cmd: "sudo dnf -qy module disable postgresql"
+  ignore_errors: yes  # Ignore errors if the module does not exist
+
+# Add PostgreSQL repository
+- name: R3.6 Install PostgreSQL repository RPM
+  ansible.builtin.command:
+    cmd: "sudo dnf --disablerepo=* install -y {{ postgresql_repo_url }}"
+
+# Install PostgreSQL
+- name: R3.7 Install PostgreSQL
+  ansible.builtin.command:
+    cmd: "sudo dnf --disablerepo=* --enablerepo={{ postgresql_repo_enable }} install -y {{ postgresql_server_pkg }}"
+
+# Optionally initialize the database
+- name: R3.8 Initialize PostgreSQL database
+  ansible.builtin.command:
+    cmd: "{{ postgresql_setup_bin }} initdb --pgdata={{ postgresql_data_dir }}"
+  ignore_errors: yes
+
+# Enable and start PostgreSQL service
+- name: R3.9 Enable PostgreSQL service
+  ansible.builtin.systemd:
+    name: postgresql-17
+    enabled: yes
+
+- name: R3.10 Start PostgreSQL service
+  ansible.builtin.service:
+    name: postgresql-17
+    state: started
+
+# Create PostgreSQL data directory
+- name: R3.11 Create PostgreSQL data directory
+  ansible.builtin.file:
+    path: "{{ postgresql_data_dir }}"
+    state: directory
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: '0700'
+
+# Configure PostgreSQL
+- name: R3.12 Configure PostgreSQL
+  ansible.builtin.template:
+    src: postgresql.conf.j2
+    dest: "{{ postgresql_config_dir }}/postgresql.conf"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: '0600'
+  notify: restart postgresql
+
+# Configure pg_hba.conf
+- name: R3.13 Configure pg_hba.conf
+  ansible.builtin.template:
+    src: pg_hba.conf.j2
+    dest: "{{ postgresql_config_dir }}/pg_hba.conf"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: '0600'
+  notify: restart postgresql

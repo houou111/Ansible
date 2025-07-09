@@ -3,4 +3,4 @@
   hosts: etcd
   become: yes
   roles:
-    - { role: r1.etcd }
+    - { role: r2.setup_etcd }

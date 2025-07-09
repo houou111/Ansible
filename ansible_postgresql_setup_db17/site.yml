@@ -1,6 +1,6 @@
-# Import all playbooks for each role
-import_playbook: playbooks/p0.check_all.yml
-import_playbook: playbooks/p1.setup_user.yml
-import_playbook: playbooks/p2.etcd.yml
-import_playbook: playbooks/p3.postgresql.yml
-import_playbook: playbooks/p4.patroni.yml
+---
+- import_playbook: playbooks/p0.check_all.yml
+- import_playbook: playbooks/p1.setup_common.yml
+- import_playbook: playbooks/p2.setup_etcd.yml
+- import_playbook: playbooks/p3.setup_postgresql_db.yml
+- import_playbook: playbooks/p4.setup_patroni.yml

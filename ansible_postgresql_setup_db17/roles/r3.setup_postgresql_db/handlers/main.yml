@@ -1,4 +1,8 @@
 ---
+- name: reload sysctl
+  ansible.builtin.command: sysctl -p
+  become: yes
+
 - name: restart postgresql
   ansible.builtin.service:
     name: "postgresql-{{ postgresql_version }}"

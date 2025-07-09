@@ -1,56 +1,106 @@
 ---
-# Add PGDG repository for ETCD
-- name: R1.1 Add PGDG repository for ETCD
-  ansible.builtin.yum_repository:
-    name: pgdg-rhel9-extras
-    description: PGDG Extras Repository
-    baseurl: https://ftp.postgresql.org/pub/repos/yum/common/pgdg-rhel9-extras/redhat/rhel-9-x86_64/
-    gpgcheck: yes
-    gpgkey: https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
-    enabled: yes
-  when: ansible_os_family == "RedHat"
 
-# Display installation information and get user confirmation
-- name: R1.2 Display ETCD installation information
-  ansible.builtin.debug:
-    msg: |
-      ===========================================
-      ETCD INSTALLATION INFORMATION
-      ===========================================
-      Data Directory: {{ etcd_data_dir }}
-      Config Directory: {{ etcd_config_dir }}
-      Cluster Name: {{ etcd_cluster_name }}
-      ===========================================
-      Do you want to proceed with the installation?
 
 # Create ETCD data directory
-- name: R1.3 Create ETCD data directory
+- name: R2.1.1 Create ETCD data directory
   ansible.builtin.file:
     path: "{{ etcd_data_dir }}"
     state: directory
-    owner: "{{ postgresql_user }}"
-    group: "{{ postgresql_group }}"
+    owner: "{{ etcd_user }}"
+    group: "{{ etcd_group }}"
     mode: '0700'
 
-# Install ETCD package
-- name: R1.4 Install ETCD package
-  ansible.builtin.command:
-    cmd: "sudo dnf --disablerepo=* --enablerepo=pgdg-rhel9-extras install -y etcd"
-  when: ansible_os_family == "RedHat"
+- name: R2.1.2 Create ETCD config directory
+  ansible.builtin.file:
+    path: "{{ etcd_config_dir }}"
+    state: directory
+    owner: "{{ etcd_user }}"
+    group: "{{ etcd_group }}"
+    mode: '0700'
+
+
+# Download and install ETCD binary from Google Storage
+- name: R2.2.0 Create temp unarchive dir for etcd
+  ansible.builtin.file:
+    path: "{{ etcd_unarchive_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: R2.2.1 Download ETCD binary
+  ansible.builtin.get_url:
+    url: "{{ etcd_download_url }}"
+    dest: "{{ etcd_download_tmp }}"
+    mode: '0644'
+  when: etcd_download_url is defined
+
+- name: R2.2.2 Unarchive ETCD binary
+  ansible.builtin.unarchive:
+    src: "{{ etcd_download_tmp }}"
+    dest: "{{ etcd_unarchive_dir }}"
+    remote_src: yes
+    extra_opts: ["--strip-components=1", "--no-same-owner"]
+  when: etcd_download_url is defined
+
+- name: R2.2.3 Copy etcd to bin dir
+  ansible.builtin.copy:
+    src: "{{ etcd_unarchive_dir }}/etcd"
+    dest: "{{ etcd_bin_dir }}/etcd"
+    mode: '0755'
+    owner: root
+    group: root
+    remote_src: yes
+  when: etcd_download_url is defined
+
+- name: R2.2.4 Copy etcdctl to bin dir
+  ansible.builtin.copy:
+    src: "{{ etcd_unarchive_dir }}/etcdctl"
+    dest: "{{ etcd_bin_dir }}/etcdctl"
+    mode: '0755'
+    owner: root
+    group: root
+    remote_src: yes
+  when: etcd_download_url is defined
+
+- name: R2.2.5 Copy etcdutl to bin dir
+  ansible.builtin.copy:
+    src: "{{ etcd_unarchive_dir }}/etcdutl"
+    dest: "{{ etcd_bin_dir }}/etcdutl"
+    mode: '0755'
+    owner: root
+    group: root
+    remote_src: yes
+  when: etcd_download_url is defined
+
 
 # Configure ETCD
-- name: R1.5 Configure ETCD
+- name: R2.3 Configure ETCD
   ansible.builtin.template:
     src: etcd.conf.j2
-    dest: "{{ etcd_config_dir }}/etcd.conf"
-    owner: "{{ postgresql_user }}"
-    group: "{{ postgresql_group }}"
+    dest: "{{ etcd_config_dir }}/etcd.conf.yml"
+    owner: "{{ etcd_user }}"
+    group: "{{ etcd_group }}"
     mode: '0644'
   notify: restart etcd
 
+# Deploy ETCD systemd service file
+- name: R2.4 Deploy ETCD systemd service file
+  ansible.builtin.template:
+    src: etcd.service.j2
+    dest: /etc/systemd/system/etcd.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: reload systemd
+
+# Ensure systemd is reloaded after service file change
+- name: R2.5 Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: yes
+  when: ansible_service_mgr == 'systemd'
+
 # Start and enable ETCD service
-- name: R1.6 Start and enable ETCD service
+- name: R2.6 Start and enable ETCD service
   ansible.builtin.service:
     name: etcd
     state: started
-    enabled: yes 
+    enabled: yes

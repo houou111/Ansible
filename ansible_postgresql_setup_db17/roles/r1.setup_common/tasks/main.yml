@@ -1,0 +1,155 @@
+
+---
+# Create etcd user and group for etcd service
+- name: R1.1.1 Create etcd group
+  ansible.builtin.group:
+    name: "{{ etcd_group }}"
+    state: present
+
+- name: R1.1.2 Create etcd user
+  ansible.builtin.user:
+    name: "{{ etcd_user }}"
+    group: "{{ etcd_group }}"
+    shell: /sbin/nologin
+    create_home: no
+    state: present
+
+# Create common user and group for postgresql and patroni services
+- name: R1.2.1 Create group for postgresql and patroni services
+  ansible.builtin.group:
+    name: "{{ postgresql_group }}"
+    state: present
+
+- name: R1.2.2 Create user for postgresql and patroni services
+  ansible.builtin.user:
+    name: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    shell: /bin/bash
+    create_home: yes
+    home: "/home/{{ postgresql_user }}"
+    state: present
+
+# Configure system limits
+- name: R1.3 Configure system limits
+  ansible.builtin.pam_limits:
+    domain: '*'
+    limit_type: "{{ item.limit_type }}"
+    limit_item: "{{ item.limit_item }}"
+    value: "{{ item.value }}"
+  loop: "{{ system_limits }}" 
+
+
+# Ensure all nodes are present in /etc/hosts
+- name: R1.4 Add etcd cluster nodes to /etc/hosts
+  ansible.builtin.blockinfile:
+    path: /etc/hosts
+    block: "{{ lookup('template', 'etcd_hosts.j2') }}"
+    marker: "# {mark} ETCD CLUSTER HOSTS -- ANSIBLE MANAGED"
+    create: yes
+    state: present
+  become: yes
+
+- name: R1.5 Install common system packages
+  ansible.builtin.yum:
+    name:
+      - telnet
+      - mlocate
+      - chrony
+      - unzip
+      - nfs-utils
+      - lsof
+      - sysstat
+      - net-tools
+      - wget
+      - net-snmp
+      - net-snmp-utils
+      - zip
+      - bind-utils
+      - nmap
+    state: present
+  ignore_errors: yes
+  become: yes
+
+# Disable firewalld
+- name: R1.6 Disable and stop firewalld
+  ansible.builtin.service:
+    name: firewalld
+    state: stopped
+    enabled: no
+  become: yes
+
+# Configure chrony NTP servers
+- name: R1.7 Configure chrony NTP servers
+  ansible.builtin.blockinfile:
+    path: /etc/chrony.conf
+    block: |
+      {% for ip in ntp_servers %}
+      server {{ ip }} iburst
+      {% endfor %}
+    marker: "# {mark} ANSIBLE MANAGED NTP SERVERS"
+    create: yes
+    state: present
+  notify:
+    - restart chronyd
+
+# Ensure chronyd is enabled and started
+- name: R1.8 Ensure chronyd is enabled and started
+  ansible.builtin.service:
+    name: chronyd
+    state: started
+    enabled: yes
+
+# Configure DNS servers
+- name: R1.9 Configure /etc/resolv.conf
+  ansible.builtin.blockinfile:
+    path: /etc/resolv.conf
+    block: |
+      {% for ip in dns_servers %}
+      nameserver {{ ip }}
+      {% endfor %}
+    marker: "# {mark} ANSIBLE MANAGED DNS SERVERS"
+    create: yes
+    state: present
+  become: yes
+
+
+# Disable SELinux
+- name: R1.10 Set SELinux to permissive
+  ansible.builtin.replace:
+    path: /etc/selinux/config
+    regexp: '^SELINUX=.*'
+    replace: 'SELINUX=permissive'
+  become: yes
+
+- name: R1.11 Setenforce 0
+  ansible.builtin.command: setenforce 0
+  ignore_errors: yes
+  become: yes
+
+# Disable Transparent Huge Pages (THP)
+- name: R1.12 Deploy disable-transparent-huge-pages systemd unit
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/disable-transparent-huge-pages.service
+    content: |
+      [Unit]
+      Description=Disable Transparent Huge Pages (THP)
+      DefaultDependencies=no
+      After=sysinit.target local-fs.target
+      Before=mongod.service
+      [Service]
+      Type=oneshot
+      ExecStart=/bin/sh -c 'echo never | tee /sys/kernel/mm/transparent_hugepage/enabled > /dev/null'
+      [Install]
+      WantedBy=basic.target
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - reload systemd
+
+- name: R1.13 Enable and start disable-transparent-huge-pages
+  ansible.builtin.systemd:
+    name: disable-transparent-huge-pages
+    enabled: yes
+    state: started
+  become: yes

@@ -1,0 +1,11 @@
+---
+# Handler to restart chronyd
+- name: restart chronyd
+  ansible.builtin.service:
+    name: chronyd
+    state: restarted
+
+# Handler to reload systemd daemon
+- name: reload systemd
+  ansible.builtin.command: systemctl daemon-reload
+  become: yes

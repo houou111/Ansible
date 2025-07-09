@@ -3,4 +3,4 @@
   hosts: postgresql
   become: yes
   roles:
-    - { role: r4.postgresql }
+    - { role: r3.setup_postgresql_db }

@@ -1,0 +1,6 @@
+# BEGIN ETCD CLUSTER HOSTS -- ANSIBLE MANAGED
+{% for host in groups['etcd'] %}
+{{ hostvars[host]['etcd_ip'] | default(hostvars[host]['ansible_host'] | default(hostvars[host]['inventory_hostname'])) }} {{ hostvars[host]['inventory_hostname'] }}{% if hostvars[host]['etcd_fqdn'] is defined %} {{ hostvars[host]['etcd_fqdn'] }}{% endif %}
+
+{% endfor %}
+# END ETCD CLUSTER HOSTS -- ANSIBLE MANAGED
