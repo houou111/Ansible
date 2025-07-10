@@ -1,0 +1,27 @@
+---
+# Remove Patroni (data/config/log, systemd, user/group)
+- name: Stop Patroni service
+  ansible.builtin.service:
+    name: patroni
+    state: stopped
+  ignore_errors: yes
+  become: yes
+
+- name: Remove Patroni data/config/log
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ patroni_data_dir | default('/data/patroni') }}"
+    - "{{ patroni_config_dir | default('/data/patroni/config') }}"
+    - "{{ patroni_log_dir | default('/data/patroni/log') }}"
+  ignore_errors: yes
+  become: yes
+
+- name: Remove Patroni systemd unit file
+  ansible.builtin.file:
+    path: /etc/systemd/system/patroni.service
+    state: absent
+  ignore_errors: yes
+  become: yes
+

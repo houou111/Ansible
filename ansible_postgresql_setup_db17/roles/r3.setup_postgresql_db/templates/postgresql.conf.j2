@@ -25,10 +25,10 @@ max_wal_senders = {{ postgresql_max_wal_senders | default(10) }}
 max_replication_slots = {{ postgresql_max_replication_slots | default(10) }}
 
 # Logging Configuration
-log_destination = {{ postgresql_log_destination | default('stderr') | to_json }}
+log_destination = '{{ postgresql_log_destination | default('stderr') }}'
 logging_collector = {{ postgresql_logging_collector | default('on') }}
-log_directory = {{ postgresql_log_directory | default('pg_log') | to_json }}
-log_filename = {{ postgresql_log_filename | default('postgresql-%Y-%m-%d_%H%M%S.log') | to_json }}
+log_directory = '{{ postgresql_log_directory | default('pg_log') }}'
+log_filename = '{{ postgresql_log_filename | default('postgresql-%Y-%m-%d_%H%M%S.log') }}'
 log_rotation_age = {{ postgresql_log_rotation_age | default('1d') }}
 log_rotation_size = {{ postgresql_log_rotation_size | default('100MB') }}
 log_min_duration_statement = {{ postgresql_log_min_duration_statement | default(1000) }}

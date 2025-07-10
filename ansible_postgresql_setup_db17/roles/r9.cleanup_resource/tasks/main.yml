@@ -1,0 +1,16 @@
+---
+# This role will remove all etcd, PostgreSQL, Patroni, and related data/config/services
+
+#- name: Remove Patroni
+#  import_tasks: r9.1.patroni.yml
+
+- name: Remove PostgreSQL
+  import_tasks: r9.2.postgresql.yml
+
+#- name: Remove etcd
+#  import_tasks: r9.3.etcd.yml
+
+- name: Reload systemd
+  ansible.builtin.command: systemctl daemon-reload
+  become: yes
+  ignore_errors: yes

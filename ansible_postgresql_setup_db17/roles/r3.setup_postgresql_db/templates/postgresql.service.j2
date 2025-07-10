@@ -1,0 +1,45 @@
+[Unit]
+Description=PostgreSQL {{ postgresql_version }} database server
+Documentation=https://www.postgresql.org/docs/{{ postgresql_version }}/static/
+After=syslog.target
+After=network-online.target
+
+[Service]
+Type=notify
+
+User={{ postgresql_user }}
+Group={{ postgresql_group }}
+
+# Note: avoid inserting whitespace in these Environment= lines, or you may
+# break postgresql-setup.
+
+# Location of database directory
+Environment=PGDATA={{ postgresql_data_dir }}
+
+# Where to send early-startup messages from the server (before the logging
+# options of postgresql.conf take effect)
+# This is normally controlled by the global default set by systemd
+# StandardOutput=syslog
+
+# Disable OOM kill on postgres main process
+OOMScoreAdjust=-1000
+Environment=PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj
+Environment=PG_OOM_ADJUST_VALUE=0
+
+ExecStartPre={{ postgresql_bin_dir }}/postgresql-{{ postgresql_version }}-check-db-dir ${PGDATA}
+ExecStart={{ postgresql_bin_dir }}/postgres -D ${PGDATA}
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+KillSignal=SIGINT
+
+# Do not set any timeout value, so that systemd will not kill postgres
+# main process during crash recovery.
+TimeoutSec=0
+
+# 0 is the same as infinity, but "infinity" needs systemd 229
+TimeoutStartSec=0
+
+TimeoutStopSec=1h
+
+[Install]
+WantedBy=multi-user.target

@@ -65,48 +65,67 @@
   ansible.builtin.command:
     cmd: "sudo dnf --disablerepo=* --enablerepo={{ postgresql_repo_enable }} install -y {{ postgresql_server_pkg }}"
 
-# Optionally initialize the database
-- name: R3.8 Initialize PostgreSQL database
-  ansible.builtin.command:
-    cmd: "{{ postgresql_setup_bin }} initdb --pgdata={{ postgresql_data_dir }}"
-  ignore_errors: yes
-
-# Enable and start PostgreSQL service
-- name: R3.9 Enable PostgreSQL service
-  ansible.builtin.systemd:
-    name: postgresql-17
-    enabled: yes
-
-- name: R3.10 Start PostgreSQL service
-  ansible.builtin.service:
-    name: postgresql-17
-    state: started
-
-# Create PostgreSQL data directory
-- name: R3.11 Create PostgreSQL data directory
+# Ensure PostgreSQL data directory exists before starting service
+- name: R3.8 Ensure PostgreSQL data directory exists before starting service
   ansible.builtin.file:
     path: "{{ postgresql_data_dir }}"
     state: directory
     owner: "{{ postgresql_user }}"
     group: "{{ postgresql_group }}"
     mode: '0700'
+  become: yes
+
+# Initialize PostgreSQL database if not already initialized
+- name: R3.9 Initialize PostgreSQL database
+  ansible.builtin.command:
+    cmd: "{{ postgresql_setup_bin }} initdb"
+  args:
+    creates: "{{ postgresql_data_dir }}/PG_VERSION"
+  become: yes
+  ignore_errors: yes
+
+- name: R3.10 Deploy custom postgresql.service with PGDATA
+  ansible.builtin.template:
+    src: postgresql.service.j2
+    dest: "/usr/lib/systemd/system/postgresql-{{ postgresql_version }}.service"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: reload systemd
+  become: yes
+
 
 # Configure PostgreSQL
-- name: R3.12 Configure PostgreSQL
+- name: R3.11 Configure PostgreSQL
   ansible.builtin.template:
     src: postgresql.conf.j2
     dest: "{{ postgresql_config_dir }}/postgresql.conf"
     owner: "{{ postgresql_user }}"
     group: "{{ postgresql_group }}"
     mode: '0600'
-  notify: restart postgresql
+
 
 # Configure pg_hba.conf
-- name: R3.13 Configure pg_hba.conf
+- name: R3.12 Configure pg_hba.conf
   ansible.builtin.template:
     src: pg_hba.conf.j2
     dest: "{{ postgresql_config_dir }}/pg_hba.conf"
     owner: "{{ postgresql_user }}"
     group: "{{ postgresql_group }}"
     mode: '0600'
-  notify: restart postgresql
+
+
+# Enable and start PostgreSQL service
+- name: R3.13.0 reload systemd
+  ansible.builtin.command: systemctl daemon-reload
+  become: yes
+
+- name: R3.13.1 Enable PostgreSQL service
+  ansible.builtin.systemd:
+    name: postgresql-17
+    enabled: yes
+
+- name: R3.13.2 Start PostgreSQL service
+  ansible.builtin.service:
+    name: postgresql-17
+    state: started

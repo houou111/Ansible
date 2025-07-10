@@ -6,4 +6,8 @@
 - name: restart postgresql
   ansible.builtin.service:
     name: "postgresql-{{ postgresql_version }}"
-    state: restarted 
+    state: restarted
+
+- name: reload systemd
+  ansible.builtin.command: systemctl daemon-reload
+  become: yes

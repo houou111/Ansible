@@ -1,0 +1,30 @@
+---
+# Remove PostgreSQL (data/config/log, systemd, user/group)
+- name: Stop PostgreSQL service
+  ansible.builtin.service:
+    name: "postgresql-{{ postgresql_version }}"
+    state: stopped
+  ignore_errors: yes
+  become: yes
+
+- name: Remove PostgreSQL data/config/log
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ postgresql_data_dir | default('/data/postgresql/data') }}"
+    - "{{ postgresql_config_dir | default('/data/postgresql/data') }}"
+    - "{{ postgresql_log_dir | default('/data/postgresql/log') }}"
+    - "{{ postgresql_wal_dir | default('/data/postgresql/wal') }}"
+    - "{{ postgresql_archive_dir | default('/data/postgresql/archive') }}"
+  ignore_errors: yes
+  become: yes
+
+- name: Remove PostgreSQL systemd unit file
+  ansible.builtin.file:
+    path: "/usr/lib/systemd/system/postgresql-{{ postgresql_version }}.service"
+    state: absent
+  ignore_errors: yes
+  become: yes
+
+

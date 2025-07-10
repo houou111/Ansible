@@ -1,44 +1,55 @@
 scope: {{ patroni_scope }}
-namespace: /service/
-name: {{ patroni_name }}
+namespace: {{ patroni_namespace }}
+name: {{ inventory_hostname }}
 
 restapi:
-  listen: {{ patroni_restapi.listen }}
-  connect_address: {{ patroni_restapi.connect_address }}
+  listen: {{ patroni_restapi_listen | default('0.0.0.0:8008') }}
+  connect_address: {{ ansible_host }}:{{ patroni_restapi_port | default(8008) }}
 
 etcd:
-  hosts: {{ patroni_etcd.hosts | to_json }}
+  host: {{ patroni_etcd_host | default(groups['etcd'][0] ~ ':2379') }}
 
 bootstrap:
   dcs:
-    ttl: {{ patroni_bootstrap.dcs.ttl }}
-    loop_wait: {{ patroni_bootstrap.dcs.loop_wait }}
-    retry_timeout: {{ patroni_bootstrap.dcs.retry_timeout }}
-    maximum_lag_on_failover: {{ patroni_bootstrap.dcs.maximum_lag_on_failover }}
+    ttl: {{ patroni_ttl | default(30) }}
+    loop_wait: {{ patroni_loop_wait | default(10) }}
+    retry_timeout: {{ patroni_retry_timeout | default(10) }}
+    maximum_lag_on_failover: {{ patroni_maximum_lag_on_failover | default(1048576) }}
     postgresql:
-      use_pg_rewind: {{ patroni_bootstrap.dcs.postgresql.use_pg_rewind }}
-      parameters:
-{% for key, value in patroni_bootstrap.dcs.postgresql.parameters.items() %}
-        {{ key }}: {{ value }}
-{% endfor %}
+      use_pg_rewind: true
+      use_slots: true
+  initdb:
+    - encoding: UTF8
+    - locale: en_US.UTF-8
+    - data-checksums
+  users:
+    postgres:
+      password: {{ postgresql_superuser_password | default('postgres') }}
+      options:
+        - superuser
+        - createdb
 
 postgresql:
   listen: 0.0.0.0:5432
-  connect_address: {{ ansible_default_ipv4.address }}:5432
+  connect_address: {{ ansible_host }}:5432
   data_dir: {{ postgresql_data_dir }}
-  bin_dir: /usr/pgsql-{{ postgresql_version }}/bin
-  pgpass: /tmp/pgpass
+  bin_dir: {{ postgresql_bin_dir }}
   authentication:
     replication:
-      username: replicator
-      password: {{ postgresql_replicator_password }}
+      username: {{ postgresql_replication_user | default('replicator') }}
+      password: {{ postgresql_replication_password | default('replicate_pass') }}
     superuser:
       username: postgres
-      password: {{ postgresql_superuser_password }}
+      password: {{ postgresql_superuser_password | default('postgres') }}
   parameters:
-    unix_socket_directories: '.'
+    wal_level: replica
+    hot_standby: 'on'
+    max_wal_senders: 10
+    max_replication_slots: 10
+    wal_keep_size: 128
 
 tags:
-    nofailover: false
-    noloadbalance: false
- 
+  nofailover: false
+  noloadbalance: false
+  clonefrom: false
+  nosync: false

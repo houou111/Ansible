@@ -1,0 +1,26 @@
+---
+# Remove etcd (data/config, systemd, user/group)
+- name: Stop etcd service
+  ansible.builtin.service:
+    name: etcd
+    state: stopped
+  ignore_errors: yes
+  become: yes
+
+- name: Remove etcd data/config
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ etcd_data_dir | default('/var/lib/etcd') }}"
+    - "{{ etcd_config_dir | default('/etc/etcd') }}"
+  ignore_errors: yes
+  become: yes
+
+- name: Remove etcd systemd unit file
+  ansible.builtin.file:
+    path: /etc/systemd/system/etcd.service
+    state: absent
+  ignore_errors: yes
+  become: yes
+

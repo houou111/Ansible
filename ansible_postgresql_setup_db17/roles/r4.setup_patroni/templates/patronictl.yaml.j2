@@ -1,0 +1,20 @@
+scope: {{ patroni_scope }}
+etcd:
+  host: {{ patroni_etcd_host | default(groups['etcd'][0] ~ ':2379') }}
+
+# Patroni REST API endpoint for this node
+restapi:
+  listen: {{ patroni_restapi_listen | default('0.0.0.0:8008') }}
+  connect_address: {{ ansible_host }}:{{ patroni_restapi_port | default(8008) }}
+
+# Authentication for patronictl
+ctl:
+  insecure: true
+  certfile: null
+  keyfile: null
+  cacert: null
+  # You can add more options as needed
+
+# Example cluster list command:
+
+# patronictl -c {{ patroni_config_dir }}/patronictl.yaml list

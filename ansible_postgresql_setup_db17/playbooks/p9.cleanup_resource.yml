@@ -1,0 +1,7 @@
+---
+- name: Cleanup all PostgreSQL HA resources (etcd, Patroni, PostgreSQL)
+  hosts: all
+  become: yes
+  gather_facts: yes
+  roles:
+    - r9.cleanup_resource
